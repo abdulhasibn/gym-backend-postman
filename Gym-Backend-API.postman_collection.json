@@ -1,0 +1,633 @@
+{
+  "info": {
+    "_postman_id": "a442e881-b024-4178-89ad-accb66ac1d58",
+    "name": "Gym Backend API",
+    "description": "HTTP collection for the gymBackend Express API.\n\nSetup:\n1. Select environment Gym Backend \u2014 Local (or set baseUrl).\n2. Set email, lane (CLIENT|STAFF), and name.\n3. Run Auth > Email OTP > Request OTP, paste OTP into otpToken.\n4. Run Verify OTP \u2014 stores accessToken, refreshToken, userId.\n5. Authenticated requests use collection Bearer {{accessToken}}.\n\nAuth model:\n- Public: /health, /auth/otp/request, /auth/otp/verify\n- Bearer identity: /auth/google/complete\n- Bearer provisioned: /auth/me",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test('Response time under 5s', function () {",
+          "  pm.expect(pm.response.responseTime).to.be.below(5000);",
+          "});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "description": "API origin (no trailing slash)"
+    },
+    {
+      "key": "email",
+      "value": "you@example.com",
+      "description": "Email used for OTP flows"
+    },
+    {
+      "key": "lane",
+      "value": "CLIENT",
+      "description": "Account lane: CLIENT or STAFF"
+    },
+    {
+      "key": "name",
+      "value": "Test User",
+      "description": "Display name for provision / Google complete"
+    },
+    {
+      "key": "otpToken",
+      "value": "",
+      "description": "OTP from email after Request OTP"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "description": "Set by Verify OTP"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "description": "Set by Verify OTP"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "description": "Set by Verify OTP"
+    },
+    {
+      "key": "expiresIn",
+      "value": "",
+      "description": "Access token TTL seconds"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "description": "Liveness probes. No auth.",
+      "item": [
+        {
+          "name": "Get Health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Body reports ok', function () {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.property('status', 'ok');",
+                  "  pm.expect(body).to.have.property('timestamp');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "GET /health \u2014 returns { status: ok, timestamp }. Use to confirm the API is up before auth flows."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "description": "Auth MVP under /auth",
+      "item": [
+        {
+          "name": "Email OTP",
+          "description": "Public passwordless OTP",
+          "item": [
+            {
+              "name": "Request OTP",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 202', function () {",
+                      "  pm.response.to.have.status(202);",
+                      "});",
+                      "",
+                      "pm.test('OTP sent acknowledgement', function () {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body).to.have.property('status', 'OTP_SENT');",
+                      "});",
+                      "",
+                      "console.log('OTP requested for', pm.collectionVariables.get('email'), '- paste code into otpToken, then run Verify OTP');"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{email}}\",\n  \"lane\": \"{{lane}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/otp/request",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "otp",
+                    "request"
+                  ]
+                },
+                "description": "POST /auth/otp/request \u2014 sends OTP to {{email}} for {{lane}}.\n\nResponse: 202 { status: OTP_SENT }\n\nAfter success, paste the email OTP into otpToken, then run Verify OTP."
+              },
+              "response": []
+            },
+            {
+              "name": "Verify OTP",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "  pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "const body = pm.response.json();",
+                      "",
+                      "pm.test('Session tokens present', function () {",
+                      "  pm.expect(body).to.have.property('session');",
+                      "  pm.expect(body.session).to.include.keys('accessToken', 'refreshToken', 'expiresIn');",
+                      "});",
+                      "",
+                      "pm.test('User provisioned', function () {",
+                      "  pm.expect(body).to.have.property('user');",
+                      "  pm.expect(body.user).to.include.keys('id', 'email', 'lane', 'roleCode');",
+                      "});",
+                      "",
+                      "if (pm.response.code === 200 && body.session) {",
+                      "  if (body.session.accessToken) {",
+                      "    pm.collectionVariables.set('accessToken', body.session.accessToken);",
+                      "    pm.environment.set('accessToken', body.session.accessToken);",
+                      "  }",
+                      "  if (body.session.refreshToken) {",
+                      "    pm.collectionVariables.set('refreshToken', body.session.refreshToken);",
+                      "    pm.environment.set('refreshToken', body.session.refreshToken);",
+                      "  }",
+                      "  if (body.session.expiresIn !== undefined && body.session.expiresIn !== null) {",
+                      "    pm.collectionVariables.set('expiresIn', String(body.session.expiresIn));",
+                      "    pm.environment.set('expiresIn', String(body.session.expiresIn));",
+                      "  }",
+                      "}",
+                      "",
+                      "if (pm.response.code === 200 && body.user) {",
+                      "  if (body.user.id) {",
+                      "    pm.collectionVariables.set('userId', body.user.id);",
+                      "    pm.environment.set('userId', body.user.id);",
+                      "  }",
+                      "  if (body.user.email) {",
+                      "    pm.collectionVariables.set('email', body.user.email);",
+                      "  }",
+                      "  if (body.user.lane) {",
+                      "    pm.collectionVariables.set('lane', body.user.lane);",
+                      "  }",
+                      "  console.log('Tokens stored. userId=', body.user.id, 'lane=', body.user.lane, 'role=', body.user.roleCode);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "value": "application/json",
+                    "key": "Content-Type"
+                  },
+                  {
+                    "value": "application/json",
+                    "key": "Accept"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{email}}\",\n  \"token\": \"{{otpToken}}\",\n  \"lane\": \"{{lane}}\",\n  \"name\": \"{{name}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/otp/verify",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "otp",
+                    "verify"
+                  ]
+                },
+                "description": "POST /auth/otp/verify \u2014 verifies OTP and provisions the user.\n\nBody: email, token (otpToken), lane (CLIENT|STAFF), name.\n\nResponse: { session: { accessToken, refreshToken, expiresIn }, user: {...} }\n\nTests script stores accessToken, refreshToken, expiresIn, and userId on collection + active environment."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Google",
+          "description": "Complete Google sign-in with existing Supabase token",
+          "item": [
+            {
+              "name": "Complete Google Auth",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const token = pm.environment.get('accessToken') || pm.collectionVariables.get('accessToken');",
+                      "if (!token) {",
+                      "  console.warn('accessToken is empty. Set a Supabase Google session token in accessToken first.');",
+                      "}"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "  pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "const body = pm.response.json();",
+                      "",
+                      "pm.test('User returned', function () {",
+                      "  pm.expect(body).to.have.property('user');",
+                      "  pm.expect(body.user).to.include.keys('id', 'email', 'lane', 'roleCode');",
+                      "});",
+                      "",
+                      "if (pm.response.code === 200 && body.user && body.user.id) {",
+                      "  pm.collectionVariables.set('userId', body.user.id);",
+                      "  pm.environment.set('userId', body.user.id);",
+                      "  if (body.user.lane) {",
+                      "    pm.collectionVariables.set('lane', body.user.lane);",
+                      "  }",
+                      "  console.log('Google user provisioned. userId=', body.user.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"lane\": \"{{lane}}\",\n  \"name\": \"{{name}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/google/complete",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "google",
+                    "complete"
+                  ]
+                },
+                "description": "POST /auth/google/complete \u2014 requires Bearer {{accessToken}} from a Supabase Google session (identity middleware).\n\nBody: lane (CLIENT|STAFF), name (optional).\n\nResponse: { user: {...} }. Stores userId. Does not rotate tokens."
+              },
+              "response": []
+            },
+            {
+              "name": "Start Google OAuth (open in browser)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Redirects to Supabase authorize (or provider page)', function () {",
+                      "  pm.expect([302, 303, 307, 308]).to.include(pm.response.code);",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "text/html"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/google/start",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "google",
+                    "start"
+                  ]
+                },
+                "description": "GET /auth/google/start \u2014 302 to Supabase Google authorize.\n\nDo not use Send in Postman for the interactive consent screen. Copy the resolved URL into a browser, or open {{baseUrl}}/auth/google/start directly.\n\nAfter Google consent you land on /auth/google/callback with access_token in the URL hash. Copy that into the accessToken variable, then run Complete Google Auth."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Session",
+          "description": "Authenticated session endpoints",
+          "item": [
+            {
+              "name": "Get Current User",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const token = pm.environment.get('accessToken') || pm.collectionVariables.get('accessToken');",
+                      "if (!token) {",
+                      "  console.warn('accessToken is empty. Run Auth > Email OTP > Verify OTP first.');",
+                      "}"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 200', function () {",
+                      "  pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "const body = pm.response.json();",
+                      "",
+                      "pm.test('Current user shape', function () {",
+                      "  pm.expect(body).to.have.property('user');",
+                      "  pm.expect(body.user).to.include.keys('id', 'email', 'name', 'lane', 'roleCode');",
+                      "});",
+                      "",
+                      "if (pm.response.code === 200 && body.user && body.user.id) {",
+                      "  pm.collectionVariables.set('userId', body.user.id);",
+                      "  pm.environment.set('userId', body.user.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "me"
+                  ]
+                },
+                "description": "GET /auth/me \u2014 requires provisioned user and collection Bearer {{accessToken}}.\n\nResponse: { user: { id, email, name, lane, roleCode, staffCode, emailVerifiedAt } }"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Negative cases",
+          "description": "Validation and auth failure checks",
+          "item": [
+            {
+              "name": "Request OTP \u2014 invalid email",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 422', function () {",
+                      "  pm.response.to.have.status(422);",
+                      "});",
+                      "",
+                      "pm.test('VALIDATION_ERROR code', function () {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body).to.have.nested.property('error.code', 'VALIDATION_ERROR');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "value": "application/json",
+                    "key": "Content-Type"
+                  },
+                  {
+                    "value": "application/json",
+                    "key": "Accept"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"not-an-email\",\n  \"lane\": \"CLIENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/otp/request",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "otp",
+                    "request"
+                  ]
+                },
+                "description": "Expects 422 with error.code = VALIDATION_ERROR when email is malformed."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Current User \u2014 missing Bearer",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status is 401', function () {",
+                      "  pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test('AUTHENTICATION_FAILED code', function () {",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body).to.have.nested.property('error.code', 'AUTHENTICATION_FAILED');",
+                      "});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "value": "application/json",
+                    "key": "Accept"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "text"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "me"
+                  ]
+                },
+                "description": "Expects 401 with error.code = AUTHENTICATION_FAILED when no Authorization header is sent."
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
