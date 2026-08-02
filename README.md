@@ -1,6 +1,6 @@
 # Gym Backend — Postman
 
-Standalone Postman collection for the [gymBackend](https://github.com/abdulhasibn/gymBackend) Express API.
+Standalone Postman collection for the [gym-backend](https://github.com/abdulhasibn/gym-backend) Express API.
 Share this repo with the team — no paid Postman plan required.
 
 ## Files
