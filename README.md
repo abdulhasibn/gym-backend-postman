@@ -33,12 +33,20 @@ Open **Examples** on a request for concrete success and error JSON. Shared error
 
 ## Smoke flow
 
-1. Set `email`, `lane` (`CLIENT` or `STAFF`), and `name` in the environment.
-2. Run **Auth → Email OTP → Request OTP**.
-3. Paste the email code into `otpToken`.
-4. Run **Verify OTP** (stores `accessToken` / `refreshToken` / `userId`).
-5. Run **Auth → Session → Get Current User**.
-6. For gym onboarding (STAFF lane): **Gym Orgs → Create Gym Org**, then **List My Gym Orgs**.
+1. Set `email` in the environment (and `lane` / `name` for first-time users).
+2. Run **Auth → Email OTP → Request OTP** — response includes `isNewUser`.
+3. If `isNewUser` is true, set `lane` (`CLIENT` or `STAFF`) and optional `name`.
+4. Paste the email code into `otpToken`.
+5. Run **Verify OTP** (include `lane` only when `isNewUser` was true; stores tokens / `userId`).
+6. Run **Auth → Session → Get Current User**.
+7. Gym onboarding (STAFF lane):
+   1. **Gym Orgs → Create Gym Org** (stores `gymOrgId`)
+   2. **List My Gym Orgs**
+   3. **Get Gym Org** / **Update Gym Org**
+8. Staff invites (needs a second STAFF account’s `staff_code` in `inviteeStaffCode`):
+   1. Admin token: **Create Staff Invite** (stores `staffInviteId`) → **List Gym Staff Invites**
+   2. Invitee token: **Staff Invite Inbox** → **Accept Staff Invite**
+   3. Or admin: **Revoke Staff Invite** while still `PENDING`
 
 `baseUrl` defaults to `http://localhost:3000` (override for hosted environments).
 
