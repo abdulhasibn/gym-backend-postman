@@ -1678,7 +1678,7 @@
     },
     {
       "name": "Gym Orgs",
-      "description": "Gym organization create/list/get/patch and in-app staff invites (staff_code / QR). Requires Bearer {{accessToken}} from Auth \u2192 Verify OTP (STAFF lane for create/invite).",
+      "description": "Create, list, get, and update gym organizations (STAFF / gym admin).",
       "item": [
         {
           "name": "Create Gym Org",
@@ -2273,7 +2273,13 @@
           "createdAt": "2026-08-05T00:51:07.000Z",
           "updatedAt": "2026-08-05T00:53:28.000Z",
           "uid": "25800783-1239ac54-ba81-c9a6-cd03-b906a74c3310"
-        },
+        }
+      ]
+    },
+    {
+      "name": "Staff Invites",
+      "description": "Create, list, inbox, revoke, and accept staff invites via staff_code.",
+      "item": [
         {
           "name": "Create Staff Invite",
           "event": [
@@ -2736,144 +2742,6 @@
           "uid": "25800783-01af8cbd-7027-8891-15d4-021d6cd73e95"
         },
         {
-          "name": "Accept Staff Invite",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status is 200', function () {",
-                  "  pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "const body = pm.response.json();",
-                  "",
-                  "pm.test('invite accepted', function () {",
-                  "  pm.expect(body).to.have.property('staffInvite');",
-                  "  pm.expect(body.staffInvite.status).to.eql('ACCEPTED');",
-                  "});",
-                  "",
-                  "if (pm.response.code === 200 && body.staffInvite && body.staffInvite.id) {",
-                  "  pm.collectionVariables.set('staffInviteId', body.staffInvite.id);",
-                  "  pm.environment.set('staffInviteId', body.staffInvite.id);",
-                  "}"
-                ]
-              }
-            }
-          ],
-          "id": "6a19739a-7d67-a6a6-bbac-f1bbe1f8f88a",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/gym-orgs/staff-invites/{{staffInviteId}}/accept",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "gym-orgs",
-                "staff-invites",
-                "{{staffInviteId}}",
-                "accept"
-              ]
-            },
-            "description": "POST /gym-orgs/staff-invites/:inviteId/accept \u2014 invitee accepts PENDING invite \u2192 role upgrade + affiliations.\n\n**Auth:** collection Bearer `{{accessToken}}` (must be invited_user)\n**Path:** `staffInviteId` from Create Staff Invite\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvite: { \u2026, status: \"ACCEPTED\", acceptedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` STAFF_INVITE_EXPIRED / CONFLICT."
-          },
-          "response": [
-            {
-              "id": "cc1ca3ad-a5ee-41fe-8180-9c9365a18942",
-              "name": "200 OK \u2014 accepted",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{baseUrl}}/gym-orgs/staff-invites/{{staffInviteId}}/accept",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "gym-orgs",
-                    "staff-invites",
-                    "{{staffInviteId}}",
-                    "accept"
-                  ]
-                },
-                "description": "POST /gym-orgs/staff-invites/:inviteId/accept \u2014 invitee accepts PENDING invite \u2192 role upgrade + affiliations.\n\n**Auth:** collection Bearer `{{accessToken}}` (must be invited_user)\n**Path:** `staffInviteId` from Create Staff Invite\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvite: { \u2026, status: \"ACCEPTED\", acceptedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` STAFF_INVITE_EXPIRED / CONFLICT."
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Accept",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "responseTime": null,
-              "body": "{\n  \"staffInvite\": {\n    \"id\": \"44444444-4444-4444-8444-444444444444\",\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"invitedUserId\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n    \"targetRole\": \"TRAINER\",\n    \"status\": \"ACCEPTED\",\n    \"expiresAt\": \"2026-08-19T00:00:00.000Z\",\n    \"createdBy\": \"22222222-2222-4222-8222-222222222222\",\n    \"acceptedAt\": \"2026-08-05T00:10:00.000Z\",\n    \"createdAt\": \"2026-08-05T00:00:00.000Z\",\n    \"updatedAt\": \"2026-08-05T00:10:00.000Z\"\n  }\n}",
-              "createdAt": "2026-08-05T00:53:48.000Z",
-              "updatedAt": "2026-08-05T00:53:48.000Z",
-              "uid": "25800783-cc1ca3ad-a5ee-41fe-8180-9c9365a18942"
-            },
-            {
-              "id": "db03a39f-d7d7-c550-9a00-c618a9e7d55a",
-              "name": "409 \u2014 invite expired",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{baseUrl}}/gym-orgs/staff-invites/{{staffInviteId}}/accept",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "gym-orgs",
-                    "staff-invites",
-                    "{{staffInviteId}}",
-                    "accept"
-                  ]
-                },
-                "description": "POST /gym-orgs/staff-invites/:inviteId/accept \u2014 invitee accepts PENDING invite \u2192 role upgrade + affiliations.\n\n**Auth:** collection Bearer `{{accessToken}}` (must be invited_user)\n**Path:** `staffInviteId` from Create Staff Invite\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvite: { \u2026, status: \"ACCEPTED\", acceptedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` STAFF_INVITE_EXPIRED / CONFLICT."
-              },
-              "status": "Conflict",
-              "code": 409,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Accept",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "responseTime": null,
-              "body": "{\n  \"error\": {\n    \"code\": \"STAFF_INVITE_EXPIRED\",\n    \"message\": \"Staff invite has expired\"\n  }\n}",
-              "createdAt": "2026-08-05T00:53:55.000Z",
-              "updatedAt": "2026-08-05T00:53:55.000Z",
-              "uid": "25800783-db03a39f-d7d7-c550-9a00-c618a9e7d55a"
-            }
-          ],
-          "createdAt": "2026-08-05T00:53:07.000Z",
-          "updatedAt": "2026-08-05T00:53:55.000Z",
-          "uid": "25800783-6a19739a-7d67-a6a6-bbac-f1bbe1f8f88a"
-        },
-        {
           "name": "Revoke Staff Invite",
           "event": [
             {
@@ -3010,6 +2878,144 @@
           "createdAt": "2026-08-05T00:51:28.000Z",
           "updatedAt": "2026-08-05T00:53:57.000Z",
           "uid": "25800783-aaf261f4-1d09-6e72-8485-e0f78cd3c339"
+        },
+        {
+          "name": "Accept Staff Invite",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('invite accepted', function () {",
+                  "  pm.expect(body).to.have.property('staffInvite');",
+                  "  pm.expect(body.staffInvite.status).to.eql('ACCEPTED');",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200 && body.staffInvite && body.staffInvite.id) {",
+                  "  pm.collectionVariables.set('staffInviteId', body.staffInvite.id);",
+                  "  pm.environment.set('staffInviteId', body.staffInvite.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "id": "6a19739a-7d67-a6a6-bbac-f1bbe1f8f88a",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/staff-invites/{{staffInviteId}}/accept",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "staff-invites",
+                "{{staffInviteId}}",
+                "accept"
+              ]
+            },
+            "description": "POST /gym-orgs/staff-invites/:inviteId/accept \u2014 invitee accepts PENDING invite \u2192 role upgrade + affiliations.\n\n**Auth:** collection Bearer `{{accessToken}}` (must be invited_user)\n**Path:** `staffInviteId` from Create Staff Invite\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvite: { \u2026, status: \"ACCEPTED\", acceptedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` STAFF_INVITE_EXPIRED / CONFLICT."
+          },
+          "response": [
+            {
+              "id": "cc1ca3ad-a5ee-41fe-8180-9c9365a18942",
+              "name": "200 OK \u2014 accepted",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/staff-invites/{{staffInviteId}}/accept",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "staff-invites",
+                    "{{staffInviteId}}",
+                    "accept"
+                  ]
+                },
+                "description": "POST /gym-orgs/staff-invites/:inviteId/accept \u2014 invitee accepts PENDING invite \u2192 role upgrade + affiliations.\n\n**Auth:** collection Bearer `{{accessToken}}` (must be invited_user)\n**Path:** `staffInviteId` from Create Staff Invite\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvite: { \u2026, status: \"ACCEPTED\", acceptedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` STAFF_INVITE_EXPIRED / CONFLICT."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Accept",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "responseTime": null,
+              "body": "{\n  \"staffInvite\": {\n    \"id\": \"44444444-4444-4444-8444-444444444444\",\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"invitedUserId\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n    \"targetRole\": \"TRAINER\",\n    \"status\": \"ACCEPTED\",\n    \"expiresAt\": \"2026-08-19T00:00:00.000Z\",\n    \"createdBy\": \"22222222-2222-4222-8222-222222222222\",\n    \"acceptedAt\": \"2026-08-05T00:10:00.000Z\",\n    \"createdAt\": \"2026-08-05T00:00:00.000Z\",\n    \"updatedAt\": \"2026-08-05T00:10:00.000Z\"\n  }\n}",
+              "createdAt": "2026-08-05T00:53:48.000Z",
+              "updatedAt": "2026-08-05T00:53:48.000Z",
+              "uid": "25800783-cc1ca3ad-a5ee-41fe-8180-9c9365a18942"
+            },
+            {
+              "id": "db03a39f-d7d7-c550-9a00-c618a9e7d55a",
+              "name": "409 \u2014 invite expired",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/staff-invites/{{staffInviteId}}/accept",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "staff-invites",
+                    "{{staffInviteId}}",
+                    "accept"
+                  ]
+                },
+                "description": "POST /gym-orgs/staff-invites/:inviteId/accept \u2014 invitee accepts PENDING invite \u2192 role upgrade + affiliations.\n\n**Auth:** collection Bearer `{{accessToken}}` (must be invited_user)\n**Path:** `staffInviteId` from Create Staff Invite\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvite: { \u2026, status: \"ACCEPTED\", acceptedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` STAFF_INVITE_EXPIRED / CONFLICT."
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Accept",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "responseTime": null,
+              "body": "{\n  \"error\": {\n    \"code\": \"STAFF_INVITE_EXPIRED\",\n    \"message\": \"Staff invite has expired\"\n  }\n}",
+              "createdAt": "2026-08-05T00:53:55.000Z",
+              "updatedAt": "2026-08-05T00:53:55.000Z",
+              "uid": "25800783-db03a39f-d7d7-c550-9a00-c618a9e7d55a"
+            }
+          ],
+          "createdAt": "2026-08-05T00:53:07.000Z",
+          "updatedAt": "2026-08-05T00:53:55.000Z",
+          "uid": "25800783-6a19739a-7d67-a6a6-bbac-f1bbe1f8f88a"
         }
       ]
     }
