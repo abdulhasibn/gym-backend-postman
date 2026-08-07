@@ -2652,6 +2652,14 @@
                   "  pm.expect(body).to.have.property('staffInvites');",
                   "  pm.expect(body.staffInvites.items).to.be.an('array');",
                   "  pm.expect(body.staffInvites).to.include.keys('total', 'limit', 'offset');",
+                  "});",
+                  "",
+                  "pm.test('inbox items embed gym profile', function () {",
+                  "  const items = pm.response.json().staffInvites.items;",
+                  "  if (items.length === 0) { return; }",
+                  "  pm.expect(items[0]).to.have.property(\"gym\");",
+                  "  pm.expect(items[0].gym).to.include.keys(\"id\", \"name\", \"timezone\");",
+                  "  pm.expect(items[0].gym.name).to.be.a(\"string\").and.not.empty;",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -2689,7 +2697,7 @@
                 }
               ]
             },
-            "description": "GET /gym-orgs/staff-invites/inbox — invitee’s staff invites (paginated). STAFF lane only. Past expiresAt shows as effective EXPIRED without writing.\n\n**Auth:** collection Bearer `{{accessToken}}` (invitee STAFF account)\n**Query:** `limit`, `offset`\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvites: { items, total, limit, offset } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `422` VALIDATION_ERROR."
+            "description": "GET /gym-orgs/staff-invites/inbox — invitee’s staff invites (paginated). STAFF lane only. Past expiresAt shows as effective EXPIRED without writing. Each item embeds `gym`: { id, name, address, contactPhone, contactEmail, logoUrl, timezone } (soft-deleted gyms omitted).\n\n**Auth:** collection Bearer `{{accessToken}}` (invitee STAFF account)\n**Query:** `limit`, `offset`\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvites: { items, total, limit, offset } }` — items include nested `gym`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `422` VALIDATION_ERROR."
           },
           "response": [
             {
@@ -2724,7 +2732,7 @@
                     }
                   ]
                 },
-                "description": "GET /gym-orgs/staff-invites/inbox — invitee’s staff invites (paginated). STAFF lane only. Past expiresAt shows as effective EXPIRED without writing.\n\n**Auth:** collection Bearer `{{accessToken}}` (invitee STAFF account)\n**Query:** `limit`, `offset`\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvites: { items, total, limit, offset } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `422` VALIDATION_ERROR."
+                "description": "GET /gym-orgs/staff-invites/inbox — invitee’s staff invites (paginated). STAFF lane only. Past expiresAt shows as effective EXPIRED without writing. Each item embeds `gym`: { id, name, address, contactPhone, contactEmail, logoUrl, timezone } (soft-deleted gyms omitted).\n\n**Auth:** collection Bearer `{{accessToken}}` (invitee STAFF account)\n**Query:** `limit`, `offset`\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvites: { items, total, limit, offset } }` — items include nested `gym`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `422` VALIDATION_ERROR."
               },
               "status": "OK",
               "code": 200,
@@ -2737,7 +2745,7 @@
               ],
               "cookie": [],
               "responseTime": null,
-              "body": "{\n  \"staffInvites\": {\n    \"items\": [\n      {\n        \"id\": \"44444444-4444-4444-8444-444444444444\",\n        \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n        \"invitedUserId\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n        \"targetRole\": \"TRAINER\",\n        \"status\": \"PENDING\",\n        \"expiresAt\": \"2026-08-19T00:00:00.000Z\",\n        \"createdBy\": \"22222222-2222-4222-8222-222222222222\",\n        \"acceptedAt\": null,\n        \"createdAt\": \"2026-08-05T00:00:00.000Z\",\n        \"updatedAt\": \"2026-08-05T00:00:00.000Z\"\n      }\n    ],\n    \"total\": 1,\n    \"limit\": 20,\n    \"offset\": 0\n  }\n}",
+              "body": "{\n  \"staffInvites\": {\n    \"items\": [\n      {\n        \"id\": \"44444444-4444-4444-8444-444444444444\",\n        \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n        \"gym\": {\n          \"id\": \"33333333-3333-4333-8333-333333333333\",\n          \"name\": \"North Star Fitness\",\n          \"address\": \"12 MG Road\",\n          \"contactPhone\": \"+919876543210\",\n          \"contactEmail\": \"desk@northstar.example\",\n          \"logoUrl\": null,\n          \"timezone\": \"Asia/Kolkata\"\n        },\n        \"invitedUserId\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n        \"targetRole\": \"TRAINER\",\n        \"status\": \"PENDING\",\n        \"expiresAt\": \"2026-08-19T00:00:00.000Z\",\n        \"createdBy\": \"22222222-2222-4222-8222-222222222222\",\n        \"acceptedAt\": null,\n        \"createdAt\": \"2026-08-05T00:00:00.000Z\",\n        \"updatedAt\": \"2026-08-05T00:00:00.000Z\"\n      }\n    ],\n    \"total\": 1,\n    \"limit\": 20,\n    \"offset\": 0\n  }\n}",
               "createdAt": "2026-08-05T00:53:46.000Z",
               "updatedAt": "2026-08-05T00:53:46.000Z",
               "uid": "25800783-249438b9-e62b-fb37-84f7-c716d0684664"
