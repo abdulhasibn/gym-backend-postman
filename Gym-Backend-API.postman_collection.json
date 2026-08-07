@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "a442e881-b024-4178-89ad-accb66ac1d58",
     "name": "Gym Backend API",
-    "description": "HTTP collection for the gymBackend Express API.\n\nSetup:\n1. Select environment Gym Backend \u2014 Local (or set baseUrl).\n2. Set email (+ lane CLIENT|STAFF and name for first-time users).\n3. Run Auth > Email OTP > Request OTP \u2014 note isNewUser; paste OTP into otpToken.\n4. Run Verify OTP (include lane only when isNewUser was true) \u2014 stores accessToken, refreshToken, userId.\n5. Authenticated requests use collection Bearer {{accessToken}}.\n\nAuth model:\n- Public: /health, /auth/otp/request, /auth/otp/verify, /auth/refresh\n- Bearer identity: /auth/google/complete\n- Bearer provisioned: /auth/me, /gym-orgs/*\n",
+    "description": "HTTP collection for the gymBackend Express API.\n\nSetup:\n1. Select environment Gym Backend — Local (or set baseUrl).\n2. Set email (+ lane CLIENT|STAFF and name for first-time users).\n3. Run Auth > Email OTP > Request OTP — note isNewUser; paste OTP into otpToken.\n4. Run Verify OTP (include lane only when isNewUser was true) — stores accessToken, refreshToken, userId.\n5. Authenticated requests use collection Bearer {{accessToken}}.\n\nAuth model:\n- Public: /health, /auth/otp/request, /auth/otp/verify, /auth/refresh\n- Bearer identity: /auth/google/complete\n- Bearer provisioned: /auth/me, /gym-orgs/*\n",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -91,6 +91,12 @@
       "value": "STF-XXXX",
       "description": "staff_code of invitee STAFF account (from /auth/me)",
       "type": "default"
+    },
+    {
+      "key": "leadId",
+      "value": "",
+      "type": "default",
+      "description": "Set by Create Lead"
     }
   ],
   "item": [
@@ -139,12 +145,12 @@
                 "health"
               ]
             },
-            "description": "GET /health \u2014 liveness probe. No auth.\n\n**Response type:** `application/json`\n**Success:** `200` `{ status: \"ok\", timestamp: string (ISO-8601) }`\n\nSee saved Examples for a concrete body. Use before auth flows to confirm the API is up."
+            "description": "GET /health — liveness probe. No auth.\n\n**Response type:** `application/json`\n**Success:** `200` `{ status: \"ok\", timestamp: string (ISO-8601) }`\n\nSee saved Examples for a concrete body. Use before auth flows to confirm the API is up."
           },
           "response": [
             {
               "id": "a68e5d6d-85f8-1518-fd2f-de6cf503de2e",
-              "name": "200 OK \u2014 healthy",
+              "name": "200 OK — healthy",
               "originalRequest": {
                 "auth": {
                   "type": "noauth"
@@ -165,7 +171,7 @@
                     "health"
                   ]
                 },
-                "description": "GET /health \u2014 liveness probe. No auth.\n\n**Response type:** `application/json`\n**Success:** `200` `{ status: \"ok\", timestamp: string (ISO-8601) }`\n\nSee saved Examples for a concrete body. Use before auth flows to confirm the API is up."
+                "description": "GET /health — liveness probe. No auth.\n\n**Response type:** `application/json`\n**Success:** `200` `{ status: \"ok\", timestamp: string (ISO-8601) }`\n\nSee saved Examples for a concrete body. Use before auth flows to confirm the API is up."
               },
               "status": "OK",
               "code": 200,
@@ -262,12 +268,12 @@
                     "request"
                   ]
                 },
-                "description": "POST /auth/otp/request \u2014 public. Sends a one-time code to the email and reports whether the client must collect lane.\n\n**Request body (JSON):** `{ email: string }` only.\n\n**Response type:** `application/json`\n**Success:** `202`\n```\n{ status: \"OTP_SENT\", isNewUser: boolean }\n```\n- `isNewUser: true` \u2014 no live app account yet; collect `lane` (+ optional `name`) before Verify OTP\n- `isNewUser: false` \u2014 returning user; omit `lane` on Verify OTP\n\n**Errors (shared envelope `{ error: { code, message } }`):**\n- `422` `VALIDATION_ERROR` | `EMAIL_ADDRESS_INVALID`\n- `429` `AUTH_RATE_LIMITED`\n- `502` `OTP_DELIVERY_FAILED`\n\nAfter success, paste the emailed OTP into collection variable `otpToken`, then run Verify OTP."
+                "description": "POST /auth/otp/request — public. Sends a one-time code to the email and reports whether the client must collect lane.\n\n**Request body (JSON):** `{ email: string }` only.\n\n**Response type:** `application/json`\n**Success:** `202`\n```\n{ status: \"OTP_SENT\", isNewUser: boolean }\n```\n- `isNewUser: true` — no live app account yet; collect `lane` (+ optional `name`) before Verify OTP\n- `isNewUser: false` — returning user; omit `lane` on Verify OTP\n\n**Errors (shared envelope `{ error: { code, message } }`):**\n- `422` `VALIDATION_ERROR` | `EMAIL_ADDRESS_INVALID`\n- `429` `AUTH_RATE_LIMITED`\n- `502` `OTP_DELIVERY_FAILED`\n\nAfter success, paste the emailed OTP into collection variable `otpToken`, then run Verify OTP."
               },
               "response": [
                 {
                   "id": "0dd17705-7f27-e9db-e809-bf155149738d",
-                  "name": "202 Accepted \u2014 OTP sent",
+                  "name": "202 Accepted — OTP sent",
                   "originalRequest": {
                     "auth": {
                       "type": "noauth"
@@ -303,7 +309,7 @@
                         "request"
                       ]
                     },
-                    "description": "POST /auth/otp/request \u2014 public. Sends a one-time code to the email and reports whether the client must collect lane.\n\n**Request body (JSON):** `{ email: string }` only.\n\n**Response type:** `application/json`\n**Success:** `202`\n```\n{ status: \"OTP_SENT\", isNewUser: boolean }\n```\n- `isNewUser: true` \u2014 no live app account yet; collect `lane` (+ optional `name`) before Verify OTP\n- `isNewUser: false` \u2014 returning user; omit `lane` on Verify OTP\n\n**Errors (shared envelope `{ error: { code, message } }`):**\n- `422` `VALIDATION_ERROR` | `EMAIL_ADDRESS_INVALID`\n- `429` `AUTH_RATE_LIMITED`\n- `502` `OTP_DELIVERY_FAILED`\n\nAfter success, paste the emailed OTP into collection variable `otpToken`, then run Verify OTP."
+                    "description": "POST /auth/otp/request — public. Sends a one-time code to the email and reports whether the client must collect lane.\n\n**Request body (JSON):** `{ email: string }` only.\n\n**Response type:** `application/json`\n**Success:** `202`\n```\n{ status: \"OTP_SENT\", isNewUser: boolean }\n```\n- `isNewUser: true` — no live app account yet; collect `lane` (+ optional `name`) before Verify OTP\n- `isNewUser: false` — returning user; omit `lane` on Verify OTP\n\n**Errors (shared envelope `{ error: { code, message } }`):**\n- `422` `VALIDATION_ERROR` | `EMAIL_ADDRESS_INVALID`\n- `429` `AUTH_RATE_LIMITED`\n- `502` `OTP_DELIVERY_FAILED`\n\nAfter success, paste the emailed OTP into collection variable `otpToken`, then run Verify OTP."
                   },
                   "status": "Accepted",
                   "code": 202,
@@ -323,7 +329,7 @@
                 },
                 {
                   "id": "1b536ee8-e665-9ff6-87ae-8b0dfa43fc88",
-                  "name": "422 \u2014 validation error",
+                  "name": "422 — validation error",
                   "originalRequest": {
                     "auth": {
                       "type": "noauth"
@@ -359,7 +365,7 @@
                         "request"
                       ]
                     },
-                    "description": "POST /auth/otp/request \u2014 public. Sends a one-time code to the email and reports whether the client must collect lane.\n\n**Request body (JSON):** `{ email: string }` only.\n\n**Response type:** `application/json`\n**Success:** `202`\n```\n{ status: \"OTP_SENT\", isNewUser: boolean }\n```\n- `isNewUser: true` \u2014 no live app account yet; collect `lane` (+ optional `name`) before Verify OTP\n- `isNewUser: false` \u2014 returning user; omit `lane` on Verify OTP\n\n**Errors (shared envelope `{ error: { code, message } }`):**\n- `422` `VALIDATION_ERROR` | `EMAIL_ADDRESS_INVALID`\n- `429` `AUTH_RATE_LIMITED`\n- `502` `OTP_DELIVERY_FAILED`\n\nAfter success, paste the emailed OTP into collection variable `otpToken`, then run Verify OTP."
+                    "description": "POST /auth/otp/request — public. Sends a one-time code to the email and reports whether the client must collect lane.\n\n**Request body (JSON):** `{ email: string }` only.\n\n**Response type:** `application/json`\n**Success:** `202`\n```\n{ status: \"OTP_SENT\", isNewUser: boolean }\n```\n- `isNewUser: true` — no live app account yet; collect `lane` (+ optional `name`) before Verify OTP\n- `isNewUser: false` — returning user; omit `lane` on Verify OTP\n\n**Errors (shared envelope `{ error: { code, message } }`):**\n- `422` `VALIDATION_ERROR` | `EMAIL_ADDRESS_INVALID`\n- `429` `AUTH_RATE_LIMITED`\n- `502` `OTP_DELIVERY_FAILED`\n\nAfter success, paste the emailed OTP into collection variable `otpToken`, then run Verify OTP."
                   },
                   "status": "Unprocessable Entity",
                   "code": 422,
@@ -479,12 +485,12 @@
                     "verify"
                   ]
                 },
-                "description": "POST /auth/otp/verify \u2014 public. Verifies OTP and provisions the app user on first success.\n\n**Request body (JSON):**\n- `email` string (required)\n- `token` string digits, 6\u201310 (required) \u2014 use `{{otpToken}}`\n- `lane` enum `CLIENT` | `STAFF` (required on **first** provision; omit when Request OTP returned `isNewUser: false`)\n- `name` string 1\u2013120 (optional)\n\n**Response type:** `application/json`\n**Success:** `200`\n```\n{\n  session: { accessToken: string, refreshToken: string, expiresIn: number },\n  user: {\n    id, email, name, lane,\n    roleCode,          // CLIENT \u2192 CLIENT; STAFF \u2192 STAFF_UNASSIGNED\n    staffCode,         // null for CLIENT; string for STAFF\n    emailVerifiedAt    // ISO-8601 | null\n  }\n}\n```\n**Errors:** `422` OTP_EXPIRED | VALIDATION_ERROR | EMAIL_NOT_VERIFIED | LANE_REQUIRED; `409` LANE_MISMATCH; `429` AUTH_RATE_LIMITED.\n\nTests store accessToken, refreshToken, expiresIn, userId on collection + environment."
+                "description": "POST /auth/otp/verify — public. Verifies OTP and provisions the app user on first success.\n\n**Request body (JSON):**\n- `email` string (required)\n- `token` string digits, 6–10 (required) — use `{{otpToken}}`\n- `lane` enum `CLIENT` | `STAFF` (required on **first** provision; omit when Request OTP returned `isNewUser: false`)\n- `name` string 1–120 (optional)\n\n**Response type:** `application/json`\n**Success:** `200`\n```\n{\n  session: { accessToken: string, refreshToken: string, expiresIn: number },\n  user: {\n    id, email, name, lane,\n    roleCode,          // CLIENT → CLIENT; STAFF → STAFF_UNASSIGNED\n    staffCode,         // null for CLIENT; string for STAFF\n    emailVerifiedAt    // ISO-8601 | null\n  }\n}\n```\n**Errors:** `422` OTP_EXPIRED | VALIDATION_ERROR | EMAIL_NOT_VERIFIED | LANE_REQUIRED; `409` LANE_MISMATCH; `429` AUTH_RATE_LIMITED.\n\nTests store accessToken, refreshToken, expiresIn, userId on collection + environment."
               },
               "response": [
                 {
                   "id": "ebfd4eac-26c3-5c9c-f206-aee53e50998b",
-                  "name": "200 OK \u2014 CLIENT session",
+                  "name": "200 OK — CLIENT session",
                   "originalRequest": {
                     "auth": {
                       "type": "noauth"
@@ -520,7 +526,7 @@
                         "verify"
                       ]
                     },
-                    "description": "POST /auth/otp/verify \u2014 public. Verifies OTP and provisions the app user on first success.\n\n**Request body (JSON):**\n- `email` string (required)\n- `token` string digits, 6\u201310 (required) \u2014 use `{{otpToken}}`\n- `lane` enum `CLIENT` | `STAFF` (required on **first** provision; omit when Request OTP returned `isNewUser: false`)\n- `name` string 1\u2013120 (optional)\n\n**Response type:** `application/json`\n**Success:** `200`\n```\n{\n  session: { accessToken: string, refreshToken: string, expiresIn: number },\n  user: {\n    id, email, name, lane,\n    roleCode,          // CLIENT \u2192 CLIENT; STAFF \u2192 STAFF_UNASSIGNED\n    staffCode,         // null for CLIENT; string for STAFF\n    emailVerifiedAt    // ISO-8601 | null\n  }\n}\n```\n**Errors:** `422` OTP_EXPIRED | VALIDATION_ERROR | EMAIL_NOT_VERIFIED | LANE_REQUIRED; `409` LANE_MISMATCH; `429` AUTH_RATE_LIMITED.\n\nTests store accessToken, refreshToken, expiresIn, userId on collection + environment."
+                    "description": "POST /auth/otp/verify — public. Verifies OTP and provisions the app user on first success.\n\n**Request body (JSON):**\n- `email` string (required)\n- `token` string digits, 6–10 (required) — use `{{otpToken}}`\n- `lane` enum `CLIENT` | `STAFF` (required on **first** provision; omit when Request OTP returned `isNewUser: false`)\n- `name` string 1–120 (optional)\n\n**Response type:** `application/json`\n**Success:** `200`\n```\n{\n  session: { accessToken: string, refreshToken: string, expiresIn: number },\n  user: {\n    id, email, name, lane,\n    roleCode,          // CLIENT → CLIENT; STAFF → STAFF_UNASSIGNED\n    staffCode,         // null for CLIENT; string for STAFF\n    emailVerifiedAt    // ISO-8601 | null\n  }\n}\n```\n**Errors:** `422` OTP_EXPIRED | VALIDATION_ERROR | EMAIL_NOT_VERIFIED | LANE_REQUIRED; `409` LANE_MISMATCH; `429` AUTH_RATE_LIMITED.\n\nTests store accessToken, refreshToken, expiresIn, userId on collection + environment."
                   },
                   "status": "OK",
                   "code": 200,
@@ -540,7 +546,7 @@
                 },
                 {
                   "id": "81133c84-21b4-889c-5dff-42bd920a8622",
-                  "name": "422 \u2014 OTP expired",
+                  "name": "422 — OTP expired",
                   "originalRequest": {
                     "auth": {
                       "type": "noauth"
@@ -576,7 +582,7 @@
                         "verify"
                       ]
                     },
-                    "description": "POST /auth/otp/verify \u2014 public. Verifies OTP and provisions the app user on first success.\n\n**Request body (JSON):**\n- `email` string (required)\n- `token` string digits, 6\u201310 (required) \u2014 use `{{otpToken}}`\n- `lane` enum `CLIENT` | `STAFF` (required on **first** provision; omit when Request OTP returned `isNewUser: false`)\n- `name` string 1\u2013120 (optional)\n\n**Response type:** `application/json`\n**Success:** `200`\n```\n{\n  session: { accessToken: string, refreshToken: string, expiresIn: number },\n  user: {\n    id, email, name, lane,\n    roleCode,          // CLIENT \u2192 CLIENT; STAFF \u2192 STAFF_UNASSIGNED\n    staffCode,         // null for CLIENT; string for STAFF\n    emailVerifiedAt    // ISO-8601 | null\n  }\n}\n```\n**Errors:** `422` OTP_EXPIRED | VALIDATION_ERROR | EMAIL_NOT_VERIFIED | LANE_REQUIRED; `409` LANE_MISMATCH; `429` AUTH_RATE_LIMITED.\n\nTests store accessToken, refreshToken, expiresIn, userId on collection + environment."
+                    "description": "POST /auth/otp/verify — public. Verifies OTP and provisions the app user on first success.\n\n**Request body (JSON):**\n- `email` string (required)\n- `token` string digits, 6–10 (required) — use `{{otpToken}}`\n- `lane` enum `CLIENT` | `STAFF` (required on **first** provision; omit when Request OTP returned `isNewUser: false`)\n- `name` string 1–120 (optional)\n\n**Response type:** `application/json`\n**Success:** `200`\n```\n{\n  session: { accessToken: string, refreshToken: string, expiresIn: number },\n  user: {\n    id, email, name, lane,\n    roleCode,          // CLIENT → CLIENT; STAFF → STAFF_UNASSIGNED\n    staffCode,         // null for CLIENT; string for STAFF\n    emailVerifiedAt    // ISO-8601 | null\n  }\n}\n```\n**Errors:** `422` OTP_EXPIRED | VALIDATION_ERROR | EMAIL_NOT_VERIFIED | LANE_REQUIRED; `409` LANE_MISMATCH; `429` AUTH_RATE_LIMITED.\n\nTests store accessToken, refreshToken, expiresIn, userId on collection + environment."
                   },
                   "status": "Unprocessable Entity",
                   "code": 422,
@@ -596,7 +602,7 @@
                 },
                 {
                   "id": "a558a68b-8729-239c-d1b6-67f987de7d90",
-                  "name": "200 OK \u2014 STAFF session",
+                  "name": "200 OK — STAFF session",
                   "originalRequest": {
                     "auth": {
                       "type": "noauth"
@@ -632,7 +638,7 @@
                         "verify"
                       ]
                     },
-                    "description": "POST /auth/otp/verify \u2014 public. Verifies OTP and provisions the app user on first success.\n\n**Request body (JSON):**\n- `email` string (required)\n- `token` string digits, 6\u201310 (required) \u2014 use `{{otpToken}}`\n- `lane` enum `CLIENT` | `STAFF` (required on **first** provision; omit when Request OTP returned `isNewUser: false`)\n- `name` string 1\u2013120 (optional)\n\n**Response type:** `application/json`\n**Success:** `200`\n```\n{\n  session: { accessToken: string, refreshToken: string, expiresIn: number },\n  user: {\n    id, email, name, lane,\n    roleCode,          // CLIENT \u2192 CLIENT; STAFF \u2192 STAFF_UNASSIGNED\n    staffCode,         // null for CLIENT; string for STAFF\n    emailVerifiedAt    // ISO-8601 | null\n  }\n}\n```\n**Errors:** `422` OTP_EXPIRED | VALIDATION_ERROR | EMAIL_NOT_VERIFIED | LANE_REQUIRED; `409` LANE_MISMATCH; `429` AUTH_RATE_LIMITED.\n\nTests store accessToken, refreshToken, expiresIn, userId on collection + environment."
+                    "description": "POST /auth/otp/verify — public. Verifies OTP and provisions the app user on first success.\n\n**Request body (JSON):**\n- `email` string (required)\n- `token` string digits, 6–10 (required) — use `{{otpToken}}`\n- `lane` enum `CLIENT` | `STAFF` (required on **first** provision; omit when Request OTP returned `isNewUser: false`)\n- `name` string 1–120 (optional)\n\n**Response type:** `application/json`\n**Success:** `200`\n```\n{\n  session: { accessToken: string, refreshToken: string, expiresIn: number },\n  user: {\n    id, email, name, lane,\n    roleCode,          // CLIENT → CLIENT; STAFF → STAFF_UNASSIGNED\n    staffCode,         // null for CLIENT; string for STAFF\n    emailVerifiedAt    // ISO-8601 | null\n  }\n}\n```\n**Errors:** `422` OTP_EXPIRED | VALIDATION_ERROR | EMAIL_NOT_VERIFIED | LANE_REQUIRED; `409` LANE_MISMATCH; `429` AUTH_RATE_LIMITED.\n\nTests store accessToken, refreshToken, expiresIn, userId on collection + environment."
                   },
                   "status": "OK",
                   "code": 200,
@@ -758,12 +764,12 @@
                     "complete"
                   ]
                 },
-                "description": "POST /auth/google/complete \u2014 Bearer identity (Supabase Google session token). Provisions the app user; does not rotate tokens.\n\n**Auth:** `Authorization: Bearer {{accessToken}}` (Google session access token)\n**Request body (JSON):** `{ lane: \"CLIENT\"|\"STAFF\", name?: string }`\n\n**Response type:** `application/json`\n**Success:** `200` `{ user: { id, email, name, lane, roleCode, staffCode, emailVerifiedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `422` VALIDATION_ERROR | GOOGLE_IDENTITY_REQUIRED | EMAIL_NOT_VERIFIED; `409` LANE_MISMATCH."
+                "description": "POST /auth/google/complete — Bearer identity (Supabase Google session token). Provisions the app user; does not rotate tokens.\n\n**Auth:** `Authorization: Bearer {{accessToken}}` (Google session access token)\n**Request body (JSON):** `{ lane: \"CLIENT\"|\"STAFF\", name?: string }`\n\n**Response type:** `application/json`\n**Success:** `200` `{ user: { id, email, name, lane, roleCode, staffCode, emailVerifiedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `422` VALIDATION_ERROR | GOOGLE_IDENTITY_REQUIRED | EMAIL_NOT_VERIFIED; `409` LANE_MISMATCH."
               },
               "response": [
                 {
                   "id": "0d36fe3e-a54a-7370-6c52-73f40264e4b0",
-                  "name": "200 OK \u2014 user provisioned",
+                  "name": "200 OK — user provisioned",
                   "originalRequest": {
                     "auth": {
                       "type": "bearer",
@@ -806,7 +812,7 @@
                         "complete"
                       ]
                     },
-                    "description": "POST /auth/google/complete \u2014 Bearer identity (Supabase Google session token). Provisions the app user; does not rotate tokens.\n\n**Auth:** `Authorization: Bearer {{accessToken}}` (Google session access token)\n**Request body (JSON):** `{ lane: \"CLIENT\"|\"STAFF\", name?: string }`\n\n**Response type:** `application/json`\n**Success:** `200` `{ user: { id, email, name, lane, roleCode, staffCode, emailVerifiedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `422` VALIDATION_ERROR | GOOGLE_IDENTITY_REQUIRED | EMAIL_NOT_VERIFIED; `409` LANE_MISMATCH."
+                    "description": "POST /auth/google/complete — Bearer identity (Supabase Google session token). Provisions the app user; does not rotate tokens.\n\n**Auth:** `Authorization: Bearer {{accessToken}}` (Google session access token)\n**Request body (JSON):** `{ lane: \"CLIENT\"|\"STAFF\", name?: string }`\n\n**Response type:** `application/json`\n**Success:** `200` `{ user: { id, email, name, lane, roleCode, staffCode, emailVerifiedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `422` VALIDATION_ERROR | GOOGLE_IDENTITY_REQUIRED | EMAIL_NOT_VERIFIED; `409` LANE_MISMATCH."
                   },
                   "status": "OK",
                   "code": 200,
@@ -826,7 +832,7 @@
                 },
                 {
                   "id": "a0142515-30c2-5454-8894-11670a3f5a9c",
-                  "name": "401 \u2014 authentication failed",
+                  "name": "401 — authentication failed",
                   "originalRequest": {
                     "auth": {
                       "type": "bearer",
@@ -869,7 +875,7 @@
                         "complete"
                       ]
                     },
-                    "description": "POST /auth/google/complete \u2014 Bearer identity (Supabase Google session token). Provisions the app user; does not rotate tokens.\n\n**Auth:** `Authorization: Bearer {{accessToken}}` (Google session access token)\n**Request body (JSON):** `{ lane: \"CLIENT\"|\"STAFF\", name?: string }`\n\n**Response type:** `application/json`\n**Success:** `200` `{ user: { id, email, name, lane, roleCode, staffCode, emailVerifiedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `422` VALIDATION_ERROR | GOOGLE_IDENTITY_REQUIRED | EMAIL_NOT_VERIFIED; `409` LANE_MISMATCH."
+                    "description": "POST /auth/google/complete — Bearer identity (Supabase Google session token). Provisions the app user; does not rotate tokens.\n\n**Auth:** `Authorization: Bearer {{accessToken}}` (Google session access token)\n**Request body (JSON):** `{ lane: \"CLIENT\"|\"STAFF\", name?: string }`\n\n**Response type:** `application/json`\n**Success:** `200` `{ user: { id, email, name, lane, roleCode, staffCode, emailVerifiedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `422` VALIDATION_ERROR | GOOGLE_IDENTITY_REQUIRED | EMAIL_NOT_VERIFIED; `409` LANE_MISMATCH."
                   },
                   "status": "Unauthorized",
                   "code": 401,
@@ -930,12 +936,12 @@
                     "start"
                   ]
                 },
-                "description": "GET /auth/google/start \u2014 public. Starts Google OAuth via Supabase.\n\n**Response type:** HTTP redirect (no JSON body)\n**Success:** `302`/`303`/`307`/`308` with `Location` \u2192 Supabase `/auth/v1/authorize?provider=google&redirect_to=...`\n**Errors:** `503` `OAUTH_CONFIGURATION` when Host/callback config is missing.\n\nOpen the resolved URL in a browser. After consent, copy `access_token` **and** `refresh_token` from the callback URL hash into `accessToken` / `refreshToken`, then run Complete Google Auth. Use Auth > Session > Refresh Session when the access token expires."
+                "description": "GET /auth/google/start — public. Starts Google OAuth via Supabase.\n\n**Response type:** HTTP redirect (no JSON body)\n**Success:** `302`/`303`/`307`/`308` with `Location` → Supabase `/auth/v1/authorize?provider=google&redirect_to=...`\n**Errors:** `503` `OAUTH_CONFIGURATION` when Host/callback config is missing.\n\nOpen the resolved URL in a browser. After consent, copy `access_token` **and** `refresh_token` from the callback URL hash into `accessToken` / `refreshToken`, then run Complete Google Auth. Use Auth > Session > Refresh Session when the access token expires."
               },
               "response": [
                 {
                   "id": "fbb92a0d-b5db-be0b-5b6e-55f6f1defe28",
-                  "name": "302 \u2014 redirect to Supabase",
+                  "name": "302 — redirect to Supabase",
                   "originalRequest": {
                     "auth": {
                       "type": "noauth"
@@ -958,7 +964,7 @@
                         "start"
                       ]
                     },
-                    "description": "GET /auth/google/start \u2014 public. Starts Google OAuth via Supabase.\n\n**Response type:** HTTP redirect (no JSON body)\n**Success:** `302`/`303`/`307`/`308` with `Location` \u2192 Supabase `/auth/v1/authorize?provider=google&redirect_to=...`\n**Errors:** `503` `OAUTH_CONFIGURATION` when Host/callback config is missing.\n\nOpen the resolved URL in a browser. After consent, copy `access_token` **and** `refresh_token` from the callback URL hash into `accessToken` / `refreshToken`, then run Complete Google Auth. Use Auth > Session > Refresh Session when the access token expires."
+                    "description": "GET /auth/google/start — public. Starts Google OAuth via Supabase.\n\n**Response type:** HTTP redirect (no JSON body)\n**Success:** `302`/`303`/`307`/`308` with `Location` → Supabase `/auth/v1/authorize?provider=google&redirect_to=...`\n**Errors:** `503` `OAUTH_CONFIGURATION` when Host/callback config is missing.\n\nOpen the resolved URL in a browser. After consent, copy `access_token` **and** `refresh_token` from the callback URL hash into `accessToken` / `refreshToken`, then run Complete Google Auth. Use Auth > Session > Refresh Session when the access token expires."
                   },
                   "status": "Found",
                   "code": 302,
@@ -1049,12 +1055,12 @@
                     "me"
                   ]
                 },
-                "description": "GET /auth/me \u2014 requires provisioned actor. Uses collection Bearer `{{accessToken}}`.\n\n**Response type:** `application/json`\n**Success:** `200` `{ user: { id, email, name, lane, roleCode, staffCode, emailVerifiedAt } }`\n**Errors:** `401` `AUTHENTICATION_FAILED` when Bearer missing/invalid or user not provisioned."
+                "description": "GET /auth/me — requires provisioned actor. Uses collection Bearer `{{accessToken}}`.\n\n**Response type:** `application/json`\n**Success:** `200` `{ user: { id, email, name, lane, roleCode, staffCode, emailVerifiedAt } }`\n**Errors:** `401` `AUTHENTICATION_FAILED` when Bearer missing/invalid or user not provisioned."
               },
               "response": [
                 {
                   "id": "ee2cdf6c-7c7f-a432-06b8-db3c7d73f703",
-                  "name": "401 \u2014 authentication failed",
+                  "name": "401 — authentication failed",
                   "originalRequest": {
                     "method": "GET",
                     "header": [
@@ -1073,7 +1079,7 @@
                         "me"
                       ]
                     },
-                    "description": "GET /auth/me \u2014 requires provisioned actor. Uses collection Bearer `{{accessToken}}`.\n\n**Response type:** `application/json`\n**Success:** `200` `{ user: { id, email, name, lane, roleCode, staffCode, emailVerifiedAt } }`\n**Errors:** `401` `AUTHENTICATION_FAILED` when Bearer missing/invalid or user not provisioned."
+                    "description": "GET /auth/me — requires provisioned actor. Uses collection Bearer `{{accessToken}}`.\n\n**Response type:** `application/json`\n**Success:** `200` `{ user: { id, email, name, lane, roleCode, staffCode, emailVerifiedAt } }`\n**Errors:** `401` `AUTHENTICATION_FAILED` when Bearer missing/invalid or user not provisioned."
                   },
                   "status": "Unauthorized",
                   "code": 401,
@@ -1093,7 +1099,7 @@
                 },
                 {
                   "id": "eb8fe901-7aff-e602-84a4-2fe1b8857341",
-                  "name": "200 OK \u2014 current user",
+                  "name": "200 OK — current user",
                   "originalRequest": {
                     "method": "GET",
                     "header": [
@@ -1112,7 +1118,7 @@
                         "me"
                       ]
                     },
-                    "description": "GET /auth/me \u2014 requires provisioned actor. Uses collection Bearer `{{accessToken}}`.\n\n**Response type:** `application/json`\n**Success:** `200` `{ user: { id, email, name, lane, roleCode, staffCode, emailVerifiedAt } }`\n**Errors:** `401` `AUTHENTICATION_FAILED` when Bearer missing/invalid or user not provisioned."
+                    "description": "GET /auth/me — requires provisioned actor. Uses collection Bearer `{{accessToken}}`.\n\n**Response type:** `application/json`\n**Success:** `200` `{ user: { id, email, name, lane, roleCode, staffCode, emailVerifiedAt } }`\n**Errors:** `401` `AUTHENTICATION_FAILED` when Bearer missing/invalid or user not provisioned."
                   },
                   "status": "OK",
                   "code": 200,
@@ -1219,12 +1225,12 @@
                     "refresh"
                   ]
                 },
-                "description": "POST /auth/refresh \u2014 public. Exchanges a refresh token for a new access + refresh session (rotation).\n\n**Request body (JSON):** `{ refreshToken: string }` \u2014 use `{{refreshToken}}` from Verify OTP.\n\n**Response type:** `application/json`\n**Success:** `200`\n```\n{\n  session: { accessToken: string, refreshToken: string, expiresIn: number }\n}\n```\n**Errors:** `401` AUTHENTICATION_FAILED; `422` VALIDATION_ERROR.\n\nTests replace collection + environment `accessToken`, `refreshToken`, and `expiresIn`. Always persist the new refresh token \u2014 the previous one is invalidated."
+                "description": "POST /auth/refresh — public. Exchanges a refresh token for a new access + refresh session (rotation).\n\n**Request body (JSON):** `{ refreshToken: string }` — use `{{refreshToken}}` from Verify OTP.\n\n**Response type:** `application/json`\n**Success:** `200`\n```\n{\n  session: { accessToken: string, refreshToken: string, expiresIn: number }\n}\n```\n**Errors:** `401` AUTHENTICATION_FAILED; `422` VALIDATION_ERROR.\n\nTests replace collection + environment `accessToken`, `refreshToken`, and `expiresIn`. Always persist the new refresh token — the previous one is invalidated."
               },
               "response": [
                 {
                   "id": "53b242f1-e713-7c0a-90af-e6896fdf2e86",
-                  "name": "200 \u2014 session refreshed",
+                  "name": "200 — session refreshed",
                   "originalRequest": {
                     "auth": {
                       "type": "noauth"
@@ -1260,7 +1266,7 @@
                 },
                 {
                   "id": "87924721-6c5d-c2af-f528-c6152a29b92e",
-                  "name": "401 \u2014 invalid refresh token",
+                  "name": "401 — invalid refresh token",
                   "originalRequest": {
                     "auth": {
                       "type": "noauth"
@@ -1310,7 +1316,7 @@
           "name": "Negative cases",
           "item": [
             {
-              "name": "Request OTP \u2014 invalid email",
+              "name": "Request OTP — invalid email",
               "event": [
                 {
                   "listen": "test",
@@ -1370,7 +1376,7 @@
               "response": [
                 {
                   "id": "d9933164-7dc7-d124-f89f-e93f6b80012e",
-                  "name": "422 \u2014 VALIDATION_ERROR",
+                  "name": "422 — VALIDATION_ERROR",
                   "originalRequest": {
                     "auth": {
                       "type": "noauth"
@@ -1430,7 +1436,7 @@
               "uid": "25800783-73c57ee5-8385-e409-4868-68b3028b89cc"
             },
             {
-              "name": "Get Current User \u2014 missing Bearer",
+              "name": "Get Current User — missing Bearer",
               "event": [
                 {
                   "listen": "test",
@@ -1490,7 +1496,7 @@
               "response": [
                 {
                   "id": "65b25770-87f1-9564-2ff2-eab04b00f50e",
-                  "name": "401 \u2014 AUTHENTICATION_FAILED",
+                  "name": "401 — AUTHENTICATION_FAILED",
                   "originalRequest": {
                     "auth": {
                       "type": "noauth"
@@ -1545,7 +1551,7 @@
               "uid": "25800783-59a4f97a-385d-9e08-0b27-499088df7c4a"
             },
             {
-              "name": "Refresh Session \u2014 invalid token",
+              "name": "Refresh Session — invalid token",
               "event": [
                 {
                   "script": {
@@ -1604,7 +1610,7 @@
               "response": [
                 {
                   "id": "34355b33-3009-1c3b-09e2-c8f76e673f06",
-                  "name": "401 \u2014 AUTHENTICATION_FAILED",
+                  "name": "401 — AUTHENTICATION_FAILED",
                   "originalRequest": {
                     "auth": {
                       "type": "noauth"
@@ -1738,12 +1744,12 @@
                 "gym-orgs"
               ]
             },
-            "description": "POST /gym-orgs \u2014 create a gym organization. Requires provisioned STAFF/ADMIN actor (roleCode STAFF_UNASSIGNED or ADMIN).\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Request body (JSON):**\n- `name` string (required)\n- `address` string | null (optional, max 2000)\n- `contactPhone` string | null (optional, max 50)\n- `contactEmail` string | null (optional email)\n- `logoUrl` string | null (optional URL)\n- `timezone` string (optional, default `Asia/Kolkata`)\n\n**Response type:** `application/json`\n**Success:** `201` `{ gymOrg: { id, name, address, contactPhone, contactEmail, logoUrl, timezone, ownerUserId, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` GYM_ORG_CREATION_FORBIDDEN; `422` VALIDATION_ERROR."
+            "description": "POST /gym-orgs — create a gym organization. Requires provisioned STAFF/ADMIN actor (roleCode STAFF_UNASSIGNED or ADMIN).\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Request body (JSON):**\n- `name` string (required)\n- `address` string | null (optional, max 2000)\n- `contactPhone` string | null (optional, max 50)\n- `contactEmail` string | null (optional email)\n- `logoUrl` string | null (optional URL)\n- `timezone` string (optional, default `Asia/Kolkata`)\n\n**Response type:** `application/json`\n**Success:** `201` `{ gymOrg: { id, name, address, contactPhone, contactEmail, logoUrl, timezone, ownerUserId, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` GYM_ORG_CREATION_FORBIDDEN; `422` VALIDATION_ERROR."
           },
           "response": [
             {
               "id": "5a6f8379-2500-1511-0646-b00398b87349",
-              "name": "201 Created \u2014 gym org",
+              "name": "201 Created — gym org",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -1774,7 +1780,7 @@
                     "gym-orgs"
                   ]
                 },
-                "description": "POST /gym-orgs \u2014 create a gym organization. Requires provisioned STAFF/ADMIN actor (roleCode STAFF_UNASSIGNED or ADMIN).\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Request body (JSON):**\n- `name` string (required)\n- `address` string | null (optional, max 2000)\n- `contactPhone` string | null (optional, max 50)\n- `contactEmail` string | null (optional email)\n- `logoUrl` string | null (optional URL)\n- `timezone` string (optional, default `Asia/Kolkata`)\n\n**Response type:** `application/json`\n**Success:** `201` `{ gymOrg: { id, name, address, contactPhone, contactEmail, logoUrl, timezone, ownerUserId, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` GYM_ORG_CREATION_FORBIDDEN; `422` VALIDATION_ERROR."
+                "description": "POST /gym-orgs — create a gym organization. Requires provisioned STAFF/ADMIN actor (roleCode STAFF_UNASSIGNED or ADMIN).\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Request body (JSON):**\n- `name` string (required)\n- `address` string | null (optional, max 2000)\n- `contactPhone` string | null (optional, max 50)\n- `contactEmail` string | null (optional email)\n- `logoUrl` string | null (optional URL)\n- `timezone` string (optional, default `Asia/Kolkata`)\n\n**Response type:** `application/json`\n**Success:** `201` `{ gymOrg: { id, name, address, contactPhone, contactEmail, logoUrl, timezone, ownerUserId, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` GYM_ORG_CREATION_FORBIDDEN; `422` VALIDATION_ERROR."
               },
               "status": "Created",
               "code": 201,
@@ -1794,7 +1800,7 @@
             },
             {
               "id": "302f57fc-2c21-4ac2-baf9-979c3ddcd23d",
-              "name": "403 \u2014 creation forbidden",
+              "name": "403 — creation forbidden",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -1825,7 +1831,7 @@
                     "gym-orgs"
                   ]
                 },
-                "description": "POST /gym-orgs \u2014 create a gym organization. Requires provisioned STAFF/ADMIN actor (roleCode STAFF_UNASSIGNED or ADMIN).\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Request body (JSON):**\n- `name` string (required)\n- `address` string | null (optional, max 2000)\n- `contactPhone` string | null (optional, max 50)\n- `contactEmail` string | null (optional email)\n- `logoUrl` string | null (optional URL)\n- `timezone` string (optional, default `Asia/Kolkata`)\n\n**Response type:** `application/json`\n**Success:** `201` `{ gymOrg: { id, name, address, contactPhone, contactEmail, logoUrl, timezone, ownerUserId, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` GYM_ORG_CREATION_FORBIDDEN; `422` VALIDATION_ERROR."
+                "description": "POST /gym-orgs — create a gym organization. Requires provisioned STAFF/ADMIN actor (roleCode STAFF_UNASSIGNED or ADMIN).\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Request body (JSON):**\n- `name` string (required)\n- `address` string | null (optional, max 2000)\n- `contactPhone` string | null (optional, max 50)\n- `contactEmail` string | null (optional email)\n- `logoUrl` string | null (optional URL)\n- `timezone` string (optional, default `Asia/Kolkata`)\n\n**Response type:** `application/json`\n**Success:** `201` `{ gymOrg: { id, name, address, contactPhone, contactEmail, logoUrl, timezone, ownerUserId, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` GYM_ORG_CREATION_FORBIDDEN; `422` VALIDATION_ERROR."
               },
               "status": "Forbidden",
               "code": 403,
@@ -1888,12 +1894,12 @@
                 "gym-orgs"
               ]
             },
-            "description": "GET /gym-orgs \u2014 list gym organizations affiliated with the authenticated user.\n\n**Auth:** collection Bearer `{{accessToken}}` (any provisioned actor)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrgs: Array<{ id, name, timezone, isOwner }> }` \u2014 empty list is `{ gymOrgs: [] }`\n**Errors:** `401` AUTHENTICATION_FAILED."
+            "description": "GET /gym-orgs — list gym organizations affiliated with the authenticated user.\n\n**Auth:** collection Bearer `{{accessToken}}` (any provisioned actor)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrgs: Array<{ id, name, timezone, isOwner }> }` — empty list is `{ gymOrgs: [] }`\n**Errors:** `401` AUTHENTICATION_FAILED."
           },
           "response": [
             {
               "id": "cb37ba96-cac9-f848-293f-f97a208e02a8",
-              "name": "200 OK \u2014 gym org list",
+              "name": "200 OK — gym org list",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -1911,7 +1917,7 @@
                     "gym-orgs"
                   ]
                 },
-                "description": "GET /gym-orgs \u2014 list gym organizations affiliated with the authenticated user.\n\n**Auth:** collection Bearer `{{accessToken}}` (any provisioned actor)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrgs: Array<{ id, name, timezone, isOwner }> }` \u2014 empty list is `{ gymOrgs: [] }`\n**Errors:** `401` AUTHENTICATION_FAILED."
+                "description": "GET /gym-orgs — list gym organizations affiliated with the authenticated user.\n\n**Auth:** collection Bearer `{{accessToken}}` (any provisioned actor)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrgs: Array<{ id, name, timezone, isOwner }> }` — empty list is `{ gymOrgs: [] }`\n**Errors:** `401` AUTHENTICATION_FAILED."
               },
               "status": "OK",
               "code": 200,
@@ -1931,7 +1937,7 @@
             },
             {
               "id": "86b2d106-b058-a022-42ef-70feb1918fda",
-              "name": "200 OK \u2014 empty list",
+              "name": "200 OK — empty list",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -1949,7 +1955,7 @@
                     "gym-orgs"
                   ]
                 },
-                "description": "GET /gym-orgs \u2014 list gym organizations affiliated with the authenticated user.\n\n**Auth:** collection Bearer `{{accessToken}}` (any provisioned actor)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrgs: Array<{ id, name, timezone, isOwner }> }` \u2014 empty list is `{ gymOrgs: [] }`\n**Errors:** `401` AUTHENTICATION_FAILED."
+                "description": "GET /gym-orgs — list gym organizations affiliated with the authenticated user.\n\n**Auth:** collection Bearer `{{accessToken}}` (any provisioned actor)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrgs: Array<{ id, name, timezone, isOwner }> }` — empty list is `{ gymOrgs: [] }`\n**Errors:** `401` AUTHENTICATION_FAILED."
               },
               "status": "OK",
               "code": 200,
@@ -2013,12 +2019,12 @@
                 "{{gymOrgId}}"
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId \u2014 org detail for affiliated staff (admin or trainer).\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Path:** `gymOrgId` from Create Gym Org (collection/env variable)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrg: { id, name, address, contactPhone, contactEmail, logoUrl, timezone, ownerUserId, isOwner, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `404` NOT_FOUND."
+            "description": "GET /gym-orgs/:gymOrgId — org detail for affiliated staff (admin or trainer).\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Path:** `gymOrgId` from Create Gym Org (collection/env variable)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrg: { id, name, address, contactPhone, contactEmail, logoUrl, timezone, ownerUserId, isOwner, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `404` NOT_FOUND."
           },
           "response": [
             {
               "id": "c3bd67b7-7de7-cfc1-2e33-9249533d5daf",
-              "name": "200 OK \u2014 gym org detail",
+              "name": "200 OK — gym org detail",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -2037,7 +2043,7 @@
                     "{{gymOrgId}}"
                   ]
                 },
-                "description": "GET /gym-orgs/:gymOrgId \u2014 org detail for affiliated staff (admin or trainer).\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Path:** `gymOrgId` from Create Gym Org (collection/env variable)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrg: { id, name, address, contactPhone, contactEmail, logoUrl, timezone, ownerUserId, isOwner, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `404` NOT_FOUND."
+                "description": "GET /gym-orgs/:gymOrgId — org detail for affiliated staff (admin or trainer).\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Path:** `gymOrgId` from Create Gym Org (collection/env variable)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrg: { id, name, address, contactPhone, contactEmail, logoUrl, timezone, ownerUserId, isOwner, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `404` NOT_FOUND."
               },
               "status": "OK",
               "code": 200,
@@ -2057,7 +2063,7 @@
             },
             {
               "id": "0e769858-2f79-f4ab-09b5-a5b159fea891",
-              "name": "404 \u2014 not found",
+              "name": "404 — not found",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -2076,7 +2082,7 @@
                     "{{gymOrgId}}"
                   ]
                 },
-                "description": "GET /gym-orgs/:gymOrgId \u2014 org detail for affiliated staff (admin or trainer).\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Path:** `gymOrgId` from Create Gym Org (collection/env variable)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrg: { id, name, address, contactPhone, contactEmail, logoUrl, timezone, ownerUserId, isOwner, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `404` NOT_FOUND."
+                "description": "GET /gym-orgs/:gymOrgId — org detail for affiliated staff (admin or trainer).\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Path:** `gymOrgId` from Create Gym Org (collection/env variable)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrg: { id, name, address, contactPhone, contactEmail, logoUrl, timezone, ownerUserId, isOwner, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `404` NOT_FOUND."
               },
               "status": "Not Found",
               "code": 404,
@@ -2154,12 +2160,12 @@
                 "{{gymOrgId}}"
               ]
             },
-            "description": "PATCH /gym-orgs/:gymOrgId \u2014 update profile/branding/timezone. Requires ADMIN with live gym_admins affiliation.\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Request body (JSON):**\n- `name` string (required)\n- `address` string | null (optional)\n- `contactPhone` string | null (optional)\n- `contactEmail` string | null (optional email)\n- `logoUrl` string | null (optional URL)\n- `timezone` string (IANA; default Asia/Kolkata)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrg: { id, name, \u2026, ownerUserId, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` GYM_ORG_WRITE_FORBIDDEN; `404` NOT_FOUND; `422` VALIDATION_ERROR."
+            "description": "PATCH /gym-orgs/:gymOrgId — update profile/branding/timezone. Requires ADMIN with live gym_admins affiliation.\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Request body (JSON):**\n- `name` string (required)\n- `address` string | null (optional)\n- `contactPhone` string | null (optional)\n- `contactEmail` string | null (optional email)\n- `logoUrl` string | null (optional URL)\n- `timezone` string (IANA; default Asia/Kolkata)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrg: { id, name, …, ownerUserId, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` GYM_ORG_WRITE_FORBIDDEN; `404` NOT_FOUND; `422` VALIDATION_ERROR."
           },
           "response": [
             {
               "id": "67d37dfc-d567-c25f-0cef-9ad5131f3478",
-              "name": "403 \u2014 write forbidden",
+              "name": "403 — write forbidden",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -2191,7 +2197,7 @@
                     "{{gymOrgId}}"
                   ]
                 },
-                "description": "PATCH /gym-orgs/:gymOrgId \u2014 update profile/branding/timezone. Requires ADMIN with live gym_admins affiliation.\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Request body (JSON):**\n- `name` string (required)\n- `address` string | null (optional)\n- `contactPhone` string | null (optional)\n- `contactEmail` string | null (optional email)\n- `logoUrl` string | null (optional URL)\n- `timezone` string (IANA; default Asia/Kolkata)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrg: { id, name, \u2026, ownerUserId, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` GYM_ORG_WRITE_FORBIDDEN; `404` NOT_FOUND; `422` VALIDATION_ERROR."
+                "description": "PATCH /gym-orgs/:gymOrgId — update profile/branding/timezone. Requires ADMIN with live gym_admins affiliation.\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Request body (JSON):**\n- `name` string (required)\n- `address` string | null (optional)\n- `contactPhone` string | null (optional)\n- `contactEmail` string | null (optional email)\n- `logoUrl` string | null (optional URL)\n- `timezone` string (IANA; default Asia/Kolkata)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrg: { id, name, …, ownerUserId, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` GYM_ORG_WRITE_FORBIDDEN; `404` NOT_FOUND; `422` VALIDATION_ERROR."
               },
               "status": "Forbidden",
               "code": 403,
@@ -2215,7 +2221,7 @@
             },
             {
               "id": "09ce4846-cb87-e102-6b69-ecb26828b9d1",
-              "name": "200 OK \u2014 updated gym org",
+              "name": "200 OK — updated gym org",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -2247,7 +2253,7 @@
                     "{{gymOrgId}}"
                   ]
                 },
-                "description": "PATCH /gym-orgs/:gymOrgId \u2014 update profile/branding/timezone. Requires ADMIN with live gym_admins affiliation.\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Request body (JSON):**\n- `name` string (required)\n- `address` string | null (optional)\n- `contactPhone` string | null (optional)\n- `contactEmail` string | null (optional email)\n- `logoUrl` string | null (optional URL)\n- `timezone` string (IANA; default Asia/Kolkata)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrg: { id, name, \u2026, ownerUserId, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` GYM_ORG_WRITE_FORBIDDEN; `404` NOT_FOUND; `422` VALIDATION_ERROR."
+                "description": "PATCH /gym-orgs/:gymOrgId — update profile/branding/timezone. Requires ADMIN with live gym_admins affiliation.\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Request body (JSON):**\n- `name` string (required)\n- `address` string | null (optional)\n- `contactPhone` string | null (optional)\n- `contactEmail` string | null (optional email)\n- `logoUrl` string | null (optional URL)\n- `timezone` string (IANA; default Asia/Kolkata)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrg: { id, name, …, ownerUserId, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` GYM_ORG_WRITE_FORBIDDEN; `404` NOT_FOUND; `422` VALIDATION_ERROR."
               },
               "status": "OK",
               "code": 200,
@@ -2340,12 +2346,12 @@
                 "staff-invites"
               ]
             },
-            "description": "POST /gym-orgs/:gymOrgId/staff-invites \u2014 invite existing STAFF by staff_code / QR (not email). Admin only.\n\n**Auth:** collection Bearer `{{accessToken}}` (ADMIN at gym)\n**Request body (JSON):**\n- `staffCode` string (required) \u2014 use env `{{inviteeStaffCode}}`\n- `targetRole` `TRAINER` | `ADMIN` (required)\n- `expiresAt` ISO datetime (optional; default now + 14 days)\n\n**Response type:** `application/json`\n**Success:** `201` `{ staffInvite: { id, gymOrgId, invitedUserId, targetRole, status, expiresAt, createdBy, acceptedAt, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `409` STAFF_ALREADY_AFFILIATED / STAFF_INVITE_ADMIN_CAP / UNIQUE_VIOLATION; `422` INVALID_STAFF_INVITEE / VALIDATION_ERROR."
+            "description": "POST /gym-orgs/:gymOrgId/staff-invites — invite existing STAFF by staff_code / QR (not email). Admin only.\n\n**Auth:** collection Bearer `{{accessToken}}` (ADMIN at gym)\n**Request body (JSON):**\n- `staffCode` string (required) — use env `{{inviteeStaffCode}}`\n- `targetRole` `TRAINER` | `ADMIN` (required)\n- `expiresAt` ISO datetime (optional; default now + 14 days)\n\n**Response type:** `application/json`\n**Success:** `201` `{ staffInvite: { id, gymOrgId, invitedUserId, targetRole, status, expiresAt, createdBy, acceptedAt, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `409` STAFF_ALREADY_AFFILIATED / STAFF_INVITE_ADMIN_CAP / UNIQUE_VIOLATION; `422` INVALID_STAFF_INVITEE / VALIDATION_ERROR."
           },
           "response": [
             {
               "id": "0b02548b-554f-0d6a-b008-33c68b24a204",
-              "name": "201 Created \u2014 staff invite",
+              "name": "201 Created — staff invite",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -2378,7 +2384,7 @@
                     "staff-invites"
                   ]
                 },
-                "description": "POST /gym-orgs/:gymOrgId/staff-invites \u2014 invite existing STAFF by staff_code / QR (not email). Admin only.\n\n**Auth:** collection Bearer `{{accessToken}}` (ADMIN at gym)\n**Request body (JSON):**\n- `staffCode` string (required) \u2014 use env `{{inviteeStaffCode}}`\n- `targetRole` `TRAINER` | `ADMIN` (required)\n- `expiresAt` ISO datetime (optional; default now + 14 days)\n\n**Response type:** `application/json`\n**Success:** `201` `{ staffInvite: { id, gymOrgId, invitedUserId, targetRole, status, expiresAt, createdBy, acceptedAt, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `409` STAFF_ALREADY_AFFILIATED / STAFF_INVITE_ADMIN_CAP / UNIQUE_VIOLATION; `422` INVALID_STAFF_INVITEE / VALIDATION_ERROR."
+                "description": "POST /gym-orgs/:gymOrgId/staff-invites — invite existing STAFF by staff_code / QR (not email). Admin only.\n\n**Auth:** collection Bearer `{{accessToken}}` (ADMIN at gym)\n**Request body (JSON):**\n- `staffCode` string (required) — use env `{{inviteeStaffCode}}`\n- `targetRole` `TRAINER` | `ADMIN` (required)\n- `expiresAt` ISO datetime (optional; default now + 14 days)\n\n**Response type:** `application/json`\n**Success:** `201` `{ staffInvite: { id, gymOrgId, invitedUserId, targetRole, status, expiresAt, createdBy, acceptedAt, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `409` STAFF_ALREADY_AFFILIATED / STAFF_INVITE_ADMIN_CAP / UNIQUE_VIOLATION; `422` INVALID_STAFF_INVITEE / VALIDATION_ERROR."
               },
               "status": "Created",
               "code": 201,
@@ -2402,7 +2408,7 @@
             },
             {
               "id": "dda4c05f-fb30-9cb4-8beb-ec65fe8d7949",
-              "name": "422 \u2014 invalid staff invitee",
+              "name": "422 — invalid staff invitee",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -2435,7 +2441,7 @@
                     "staff-invites"
                   ]
                 },
-                "description": "POST /gym-orgs/:gymOrgId/staff-invites \u2014 invite existing STAFF by staff_code / QR (not email). Admin only.\n\n**Auth:** collection Bearer `{{accessToken}}` (ADMIN at gym)\n**Request body (JSON):**\n- `staffCode` string (required) \u2014 use env `{{inviteeStaffCode}}`\n- `targetRole` `TRAINER` | `ADMIN` (required)\n- `expiresAt` ISO datetime (optional; default now + 14 days)\n\n**Response type:** `application/json`\n**Success:** `201` `{ staffInvite: { id, gymOrgId, invitedUserId, targetRole, status, expiresAt, createdBy, acceptedAt, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `409` STAFF_ALREADY_AFFILIATED / STAFF_INVITE_ADMIN_CAP / UNIQUE_VIOLATION; `422` INVALID_STAFF_INVITEE / VALIDATION_ERROR."
+                "description": "POST /gym-orgs/:gymOrgId/staff-invites — invite existing STAFF by staff_code / QR (not email). Admin only.\n\n**Auth:** collection Bearer `{{accessToken}}` (ADMIN at gym)\n**Request body (JSON):**\n- `staffCode` string (required) — use env `{{inviteeStaffCode}}`\n- `targetRole` `TRAINER` | `ADMIN` (required)\n- `expiresAt` ISO datetime (optional; default now + 14 days)\n\n**Response type:** `application/json`\n**Success:** `201` `{ staffInvite: { id, gymOrgId, invitedUserId, targetRole, status, expiresAt, createdBy, acceptedAt, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `409` STAFF_ALREADY_AFFILIATED / STAFF_INVITE_ADMIN_CAP / UNIQUE_VIOLATION; `422` INVALID_STAFF_INVITEE / VALIDATION_ERROR."
               },
               "status": "Unprocessable Entity",
               "code": 422,
@@ -2459,7 +2465,7 @@
             },
             {
               "id": "8529bd21-412b-4251-9dce-1745fefb9f15",
-              "name": "403 \u2014 invite forbidden",
+              "name": "403 — invite forbidden",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -2492,7 +2498,7 @@
                     "staff-invites"
                   ]
                 },
-                "description": "POST /gym-orgs/:gymOrgId/staff-invites \u2014 invite existing STAFF by staff_code / QR (not email). Admin only.\n\n**Auth:** collection Bearer `{{accessToken}}` (ADMIN at gym)\n**Request body (JSON):**\n- `staffCode` string (required) \u2014 use env `{{inviteeStaffCode}}`\n- `targetRole` `TRAINER` | `ADMIN` (required)\n- `expiresAt` ISO datetime (optional; default now + 14 days)\n\n**Response type:** `application/json`\n**Success:** `201` `{ staffInvite: { id, gymOrgId, invitedUserId, targetRole, status, expiresAt, createdBy, acceptedAt, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `409` STAFF_ALREADY_AFFILIATED / STAFF_INVITE_ADMIN_CAP / UNIQUE_VIOLATION; `422` INVALID_STAFF_INVITEE / VALIDATION_ERROR."
+                "description": "POST /gym-orgs/:gymOrgId/staff-invites — invite existing STAFF by staff_code / QR (not email). Admin only.\n\n**Auth:** collection Bearer `{{accessToken}}` (ADMIN at gym)\n**Request body (JSON):**\n- `staffCode` string (required) — use env `{{inviteeStaffCode}}`\n- `targetRole` `TRAINER` | `ADMIN` (required)\n- `expiresAt` ISO datetime (optional; default now + 14 days)\n\n**Response type:** `application/json`\n**Success:** `201` `{ staffInvite: { id, gymOrgId, invitedUserId, targetRole, status, expiresAt, createdBy, acceptedAt, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `409` STAFF_ALREADY_AFFILIATED / STAFF_INVITE_ADMIN_CAP / UNIQUE_VIOLATION; `422` INVALID_STAFF_INVITEE / VALIDATION_ERROR."
               },
               "status": "Forbidden",
               "code": 403,
@@ -2572,12 +2578,12 @@
                 }
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/staff-invites \u2014 paginated staff invites for a gym. Admin only.\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Query:** `limit` (1\u2013100, default 20), `offset` (default 0)\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvites: { items: StaffInvite[], total, limit, offset } }` \u2014 PENDING past expiresAt may appear as effective EXPIRED\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `422` VALIDATION_ERROR."
+            "description": "GET /gym-orgs/:gymOrgId/staff-invites — paginated staff invites for a gym. Admin only.\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Query:** `limit` (1–100, default 20), `offset` (default 0)\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvites: { items: StaffInvite[], total, limit, offset } }` — PENDING past expiresAt may appear as effective EXPIRED\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `422` VALIDATION_ERROR."
           },
           "response": [
             {
               "id": "4a83cfd0-ed27-966d-83dd-f12de6d6b091",
-              "name": "200 OK \u2014 staff invite page",
+              "name": "200 OK — staff invite page",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -2607,7 +2613,7 @@
                     }
                   ]
                 },
-                "description": "GET /gym-orgs/:gymOrgId/staff-invites \u2014 paginated staff invites for a gym. Admin only.\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Query:** `limit` (1\u2013100, default 20), `offset` (default 0)\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvites: { items: StaffInvite[], total, limit, offset } }` \u2014 PENDING past expiresAt may appear as effective EXPIRED\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `422` VALIDATION_ERROR."
+                "description": "GET /gym-orgs/:gymOrgId/staff-invites — paginated staff invites for a gym. Admin only.\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Query:** `limit` (1–100, default 20), `offset` (default 0)\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvites: { items: StaffInvite[], total, limit, offset } }` — PENDING past expiresAt may appear as effective EXPIRED\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `422` VALIDATION_ERROR."
               },
               "status": "OK",
               "code": 200,
@@ -2683,12 +2689,12 @@
                 }
               ]
             },
-            "description": "GET /gym-orgs/staff-invites/inbox \u2014 invitee\u2019s staff invites (paginated). STAFF lane only. Past expiresAt shows as effective EXPIRED without writing.\n\n**Auth:** collection Bearer `{{accessToken}}` (invitee STAFF account)\n**Query:** `limit`, `offset`\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvites: { items, total, limit, offset } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `422` VALIDATION_ERROR."
+            "description": "GET /gym-orgs/staff-invites/inbox — invitee’s staff invites (paginated). STAFF lane only. Past expiresAt shows as effective EXPIRED without writing.\n\n**Auth:** collection Bearer `{{accessToken}}` (invitee STAFF account)\n**Query:** `limit`, `offset`\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvites: { items, total, limit, offset } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `422` VALIDATION_ERROR."
           },
           "response": [
             {
               "id": "249438b9-e62b-fb37-84f7-c716d0684664",
-              "name": "200 OK \u2014 inbox page",
+              "name": "200 OK — inbox page",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -2718,7 +2724,7 @@
                     }
                   ]
                 },
-                "description": "GET /gym-orgs/staff-invites/inbox \u2014 invitee\u2019s staff invites (paginated). STAFF lane only. Past expiresAt shows as effective EXPIRED without writing.\n\n**Auth:** collection Bearer `{{accessToken}}` (invitee STAFF account)\n**Query:** `limit`, `offset`\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvites: { items, total, limit, offset } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `422` VALIDATION_ERROR."
+                "description": "GET /gym-orgs/staff-invites/inbox — invitee’s staff invites (paginated). STAFF lane only. Past expiresAt shows as effective EXPIRED without writing.\n\n**Auth:** collection Bearer `{{accessToken}}` (invitee STAFF account)\n**Query:** `limit`, `offset`\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvites: { items, total, limit, offset } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `422` VALIDATION_ERROR."
               },
               "status": "OK",
               "code": 200,
@@ -2789,12 +2795,12 @@
                 "revoke"
               ]
             },
-            "description": "POST /gym-orgs/staff-invites/:inviteId/revoke \u2014 Admin revokes a PENDING invite for their gym.\n\n**Auth:** collection Bearer `{{accessToken}}` (ADMIN at invite\u2019s gym)\n**Path:** `staffInviteId`\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvite: { \u2026, status: \"REVOKED\" } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` STAFF_INVITE_INVALID_TRANSITION."
+            "description": "POST /gym-orgs/staff-invites/:inviteId/revoke — Admin revokes a PENDING invite for their gym.\n\n**Auth:** collection Bearer `{{accessToken}}` (ADMIN at invite’s gym)\n**Path:** `staffInviteId`\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvite: { …, status: \"REVOKED\" } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` STAFF_INVITE_INVALID_TRANSITION."
           },
           "response": [
             {
               "id": "e669f9c4-d189-708a-53f2-2b9704fbe2f9",
-              "name": "200 OK \u2014 revoked",
+              "name": "200 OK — revoked",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -2815,7 +2821,7 @@
                     "revoke"
                   ]
                 },
-                "description": "POST /gym-orgs/staff-invites/:inviteId/revoke \u2014 Admin revokes a PENDING invite for their gym.\n\n**Auth:** collection Bearer `{{accessToken}}` (ADMIN at invite\u2019s gym)\n**Path:** `staffInviteId`\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvite: { \u2026, status: \"REVOKED\" } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` STAFF_INVITE_INVALID_TRANSITION."
+                "description": "POST /gym-orgs/staff-invites/:inviteId/revoke — Admin revokes a PENDING invite for their gym.\n\n**Auth:** collection Bearer `{{accessToken}}` (ADMIN at invite’s gym)\n**Path:** `staffInviteId`\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvite: { …, status: \"REVOKED\" } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` STAFF_INVITE_INVALID_TRANSITION."
               },
               "status": "OK",
               "code": 200,
@@ -2835,7 +2841,7 @@
             },
             {
               "id": "f0b49307-1e06-8dde-9abc-fd270469560a",
-              "name": "403 \u2014 revoke forbidden",
+              "name": "403 — revoke forbidden",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -2856,7 +2862,7 @@
                     "revoke"
                   ]
                 },
-                "description": "POST /gym-orgs/staff-invites/:inviteId/revoke \u2014 Admin revokes a PENDING invite for their gym.\n\n**Auth:** collection Bearer `{{accessToken}}` (ADMIN at invite\u2019s gym)\n**Path:** `staffInviteId`\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvite: { \u2026, status: \"REVOKED\" } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` STAFF_INVITE_INVALID_TRANSITION."
+                "description": "POST /gym-orgs/staff-invites/:inviteId/revoke — Admin revokes a PENDING invite for their gym.\n\n**Auth:** collection Bearer `{{accessToken}}` (ADMIN at invite’s gym)\n**Path:** `staffInviteId`\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvite: { …, status: \"REVOKED\" } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` STAFF_INVITE_INVALID_TRANSITION."
               },
               "status": "Forbidden",
               "code": 403,
@@ -2927,12 +2933,12 @@
                 "accept"
               ]
             },
-            "description": "POST /gym-orgs/staff-invites/:inviteId/accept \u2014 invitee accepts PENDING invite \u2192 role upgrade + affiliations.\n\n**Auth:** collection Bearer `{{accessToken}}` (must be invited_user)\n**Path:** `staffInviteId` from Create Staff Invite\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvite: { \u2026, status: \"ACCEPTED\", acceptedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` STAFF_INVITE_EXPIRED / CONFLICT."
+            "description": "POST /gym-orgs/staff-invites/:inviteId/accept — invitee accepts PENDING invite → role upgrade + affiliations.\n\n**Auth:** collection Bearer `{{accessToken}}` (must be invited_user)\n**Path:** `staffInviteId` from Create Staff Invite\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvite: { …, status: \"ACCEPTED\", acceptedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` STAFF_INVITE_EXPIRED / CONFLICT."
           },
           "response": [
             {
               "id": "cc1ca3ad-a5ee-41fe-8180-9c9365a18942",
-              "name": "200 OK \u2014 accepted",
+              "name": "200 OK — accepted",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -2953,7 +2959,7 @@
                     "accept"
                   ]
                 },
-                "description": "POST /gym-orgs/staff-invites/:inviteId/accept \u2014 invitee accepts PENDING invite \u2192 role upgrade + affiliations.\n\n**Auth:** collection Bearer `{{accessToken}}` (must be invited_user)\n**Path:** `staffInviteId` from Create Staff Invite\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvite: { \u2026, status: \"ACCEPTED\", acceptedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` STAFF_INVITE_EXPIRED / CONFLICT."
+                "description": "POST /gym-orgs/staff-invites/:inviteId/accept — invitee accepts PENDING invite → role upgrade + affiliations.\n\n**Auth:** collection Bearer `{{accessToken}}` (must be invited_user)\n**Path:** `staffInviteId` from Create Staff Invite\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvite: { …, status: \"ACCEPTED\", acceptedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` STAFF_INVITE_EXPIRED / CONFLICT."
               },
               "status": "OK",
               "code": 200,
@@ -2973,7 +2979,7 @@
             },
             {
               "id": "db03a39f-d7d7-c550-9a00-c618a9e7d55a",
-              "name": "409 \u2014 invite expired",
+              "name": "409 — invite expired",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -2994,7 +3000,7 @@
                     "accept"
                   ]
                 },
-                "description": "POST /gym-orgs/staff-invites/:inviteId/accept \u2014 invitee accepts PENDING invite \u2192 role upgrade + affiliations.\n\n**Auth:** collection Bearer `{{accessToken}}` (must be invited_user)\n**Path:** `staffInviteId` from Create Staff Invite\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvite: { \u2026, status: \"ACCEPTED\", acceptedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` STAFF_INVITE_EXPIRED / CONFLICT."
+                "description": "POST /gym-orgs/staff-invites/:inviteId/accept — invitee accepts PENDING invite → role upgrade + affiliations.\n\n**Auth:** collection Bearer `{{accessToken}}` (must be invited_user)\n**Path:** `staffInviteId` from Create Staff Invite\n\n**Response type:** `application/json`\n**Success:** `200` `{ staffInvite: { …, status: \"ACCEPTED\", acceptedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` STAFF_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` STAFF_INVITE_EXPIRED / CONFLICT."
               },
               "status": "Conflict",
               "code": 409,
@@ -3016,6 +3022,295 @@
           "createdAt": "2026-08-05T00:53:07.000Z",
           "updatedAt": "2026-08-05T00:53:55.000Z",
           "uid": "25800783-6a19739a-7d67-a6a6-bbac-f1bbe1f8f88a"
+        }
+      ]
+    },
+    {
+      "name": "Leads",
+      "description": "Mini-CRM (A11–A13): gym-scoped leads under /gym-orgs/:gymOrgId/leads. Requires ADMIN + live gym_admins. Soft warn on duplicate open phone; A14 convert deferred.",
+      "item": [
+        {
+          "name": "Create Lead",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/leads",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "leads"
+              ]
+            },
+            "description": "POST /gym-orgs/:gymOrgId/leads — capture lead (status NEW). Soft warn DUPLICATE_OPEN_LEAD_PHONE if another open lead shares phone (still 201).\n\n**Auth:** Bearer ADMIN at gym\n**Success:** `201` `{ lead, warnings }`",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Walk-in Prospect\",\n  \"phone\": \"9876543210\",\n  \"source\": \"walk-in\",\n  \"interest\": \"trial\",\n  \"notes\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('lead shape', function () {",
+                  "  pm.expect(body).to.have.property('lead');",
+                  "  pm.expect(body.lead).to.include.keys('id', 'name', 'phone', 'status');",
+                  "  pm.expect(body).to.have.property('warnings');",
+                  "});",
+                  "if (pm.response.code === 201 && body.lead && body.lead.id) {",
+                  "  pm.collectionVariables.set('leadId', body.lead.id);",
+                  "  pm.environment.set('leadId', body.lead.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Leads",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/leads?limit=20&offset=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "leads"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "GET /gym-orgs/:gymOrgId/leads — paginated list. Optional query `status` = NEW|CONTACTED|TRIAL|CONVERTED|LOST.\n\n**Success:** `200` `{ leads: { items, total, limit, offset } }`"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Lead",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/leads/{{leadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "leads",
+                "{{leadId}}"
+              ]
+            },
+            "description": "GET /gym-orgs/:gymOrgId/leads/:leadId\n\n**Success:** `200` `{ lead }` · `404` NOT_FOUND"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Lead",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/leads/{{leadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "leads",
+                "{{leadId}}"
+              ]
+            },
+            "description": "PATCH /gym-orgs/:gymOrgId/leads/:leadId — update fields. `followUpDate` YYYY-MM-DD or null to clear; omit to keep.\n\n**Success:** `200` `{ lead, warnings }`",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Walk-in Prospect\",\n  \"phone\": \"9876543210\",\n  \"source\": \"walk-in\",\n  \"interest\": \"trial\",\n  \"notes\": \"follow up\",\n  \"followUpDate\": \"2026-08-10\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Lead Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/leads/{{leadId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "leads",
+                "{{leadId}}",
+                "status"
+              ]
+            },
+            "description": "PATCH /gym-orgs/:gymOrgId/leads/:leadId/status — pipeline any→any among NEW|CONTACTED|TRIAL|CONVERTED|LOST.\n\n**Success:** `200` `{ lead }`",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CONTACTED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Due Follow-ups",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/leads/due-follow-ups?onOrBefore=2026-08-10&limit=20&offset=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "leads",
+                "due-follow-ups"
+              ],
+              "query": [
+                {
+                  "key": "onOrBefore",
+                  "value": "2026-08-10"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "GET /gym-orgs/:gymOrgId/leads/due-follow-ups — open leads with follow_up_date <= onOrBefore (default today UTC).\n\n**Success:** `200` `{ leads: Page }`"
+          },
+          "response": []
+        },
+        {
+          "name": "Soft Delete Lead",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/leads/{{leadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "leads",
+                "{{leadId}}"
+              ]
+            },
+            "description": "DELETE /gym-orgs/:gymOrgId/leads/:leadId — soft delete.\n\n**Success:** `204` · thereafter GET → `404`"
+          },
+          "response": []
         }
       ]
     }

@@ -7,7 +7,7 @@ Share this repo with the team — no paid Postman plan required.
 
 | File | Purpose |
 | ---- | ------- |
-| `Gym-Backend-API.postman_collection.json` | Auth + Gym Orgs requests, AI-oriented docs, saved Examples |
+| `Gym-Backend-API.postman_collection.json` | Auth + Gym Orgs + Staff Invites + Leads, AI-oriented docs, saved Examples |
 | `Gym-Backend-Local.postman_environment.json` | Local `baseUrl` (`http://localhost:3000`) |
 | `Gym-Backend-Dev.postman_environment.json` | Dev environment variables (same keys as Local) |
 
@@ -47,6 +47,10 @@ Open **Examples** on a request for concrete success and error JSON. Shared error
    1. Admin token: **Create Staff Invite** (stores `staffInviteId`) → **List Gym Staff Invites**
    2. Invitee token: **Staff Invite Inbox** → **Accept Staff Invite**
    3. Or admin: **Revoke Staff Invite** while still `PENDING`
+9. Mini-CRM (Admin at gym; needs `gymOrgId`):
+   1. **Leads → Create Lead** (stores `leadId`; may return soft `warnings`)
+   2. **Change Lead Status** / **Update Lead** (set `followUpDate`)
+   3. **List Due Follow-ups** → **Soft Delete Lead**
 
 `baseUrl` defaults to `http://localhost:3000` (override for hosted environments).
 
