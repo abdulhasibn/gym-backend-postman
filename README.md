@@ -63,9 +63,12 @@ Open **Examples** on a request for concrete success and error JSON. Shared error
 10. Plan catalog (Admin at gym; needs `gymOrgId`):
    1. **Plans → Create BASE Plan** (stores `planId`)
    2. Optional **Create ADDON Plan** (`capability: TRAINER_COACHING`)
-   3. **Membership Invites → Create Membership Invite** (stores `membershipInviteId`; needs `planId`)
-   4. **List Membership Invites** → **Revoke Membership Invite**
-   5. **List Plans** / **Get Plan** / **Update Plan** → **Soft Delete Plan**
+   3. **List Plans** / **Get Plan** / **Update Plan** → **Soft Delete Plan**
+11. Membership invites + grants (needs BASE `planId`):
+   1. Admin token: **Membership Invites → Create Membership Invite** (stores `membershipInviteId`; use invitee CLIENT email)
+   2. Client token (same email): **Membership Invite Inbox** → **Accept Membership Invite** (stores `membershipId`)
+   3. Client: **Get My Data Grants** / **Update My Data Grants** while ACTIVE
+   4. Or admin: **List Membership Invites** → **Revoke Membership Invite** while still `PENDING`
 
 `baseUrl` defaults to `http://localhost:3000` (override for hosted environments).
 
