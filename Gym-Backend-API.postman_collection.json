@@ -97,6 +97,12 @@
       "value": "",
       "type": "default",
       "description": "Set by Create Lead"
+    },
+    {
+      "key": "planId",
+      "value": "",
+      "type": "default",
+      "description": "Set by Create Plan (BASE)"
     }
   ],
   "item": [
@@ -3317,6 +3323,260 @@
               ]
             },
             "description": "DELETE /gym-orgs/:gymOrgId/leads/:leadId — soft delete.\n\n**Success:** `204` · thereafter GET → `404`"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Plans",
+      "description": "Stint 1.1 plan catalog (A7): gym-scoped membership plans under /gym-orgs/:gymOrgId/plans. Requires ADMIN + live gym_admins. kind BASE|ADDON; ADDON requires capability TRAINER_COACHING (system enum). kind/capability immutable after create.",
+      "item": [
+        {
+          "name": "Create BASE Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "plans"
+              ]
+            },
+            "description": "POST /gym-orgs/:gymOrgId/plans — create BASE catalog SKU (no capability).\n\n**Auth:** Bearer ADMIN at gym\n**Success:** `201` `{ plan }`",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Monthly\",\n  \"kind\": \"BASE\",\n  \"durationDays\": 30,\n  \"price\": 999\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('plan shape', function () {",
+                  "  pm.expect(body).to.have.property('plan');",
+                  "  pm.expect(body.plan).to.include.keys('id', 'name', 'kind', 'durationDays', 'price', 'active');",
+                  "  pm.expect(body.plan.kind).to.eql('BASE');",
+                  "  pm.expect(body.plan.capability).to.eql(null);",
+                  "});",
+                  "if (pm.response.code === 201 && body.plan && body.plan.id) {",
+                  "  pm.collectionVariables.set('planId', body.plan.id);",
+                  "  pm.environment.set('planId', body.plan.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create ADDON Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "plans"
+              ]
+            },
+            "description": "POST /gym-orgs/:gymOrgId/plans — create ADDON with capability TRAINER_COACHING (MVP only).\n\n**Auth:** Bearer ADMIN at gym\n**Success:** `201` `{ plan }`",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"PT Coaching\",\n  \"kind\": \"ADDON\",\n  \"capability\": \"TRAINER_COACHING\",\n  \"durationDays\": 30,\n  \"price\": 1500\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Plans",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/plans?limit=20&offset=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "plans"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "key": "kind",
+                  "value": "BASE",
+                  "disabled": true
+                },
+                {
+                  "key": "active",
+                  "value": "true",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "GET /gym-orgs/:gymOrgId/plans — paginated catalog. Optional `kind`=BASE|ADDON, `active`=true|false.\n\n**Success:** `200` `{ plans: { items, total, limit, offset } }`"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Plan",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/plans/{{planId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "plans",
+                "{{planId}}"
+              ]
+            },
+            "description": "GET /gym-orgs/:gymOrgId/plans/:planId\n\n**Success:** `200` `{ plan }` · `404` NOT_FOUND"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Plan",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/plans/{{planId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "plans",
+                "{{planId}}"
+              ]
+            },
+            "description": "PATCH /gym-orgs/:gymOrgId/plans/:planId — name, durationDays, price, active only. kind/capability immutable.\n\n**Success:** `200` `{ plan }`",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Monthly Plus\",\n  \"durationDays\": 45,\n  \"price\": 1200,\n  \"active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Soft Delete Plan",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/plans/{{planId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "plans",
+                "{{planId}}"
+              ]
+            },
+            "description": "DELETE /gym-orgs/:gymOrgId/plans/:planId — soft delete.\n\n**Success:** `204` · thereafter GET → `404`"
           },
           "response": []
         }

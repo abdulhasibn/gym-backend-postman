@@ -7,7 +7,7 @@ Share this repo with the team — no paid Postman plan required.
 
 | File | Purpose |
 | ---- | ------- |
-| `Gym-Backend-API.postman_collection.json` | Auth + Gym Orgs + Staff Invites + Leads, AI-oriented docs, saved Examples |
+| `Gym-Backend-API.postman_collection.json` | Auth + Gym Orgs + Staff Invites + Leads + Plans, AI-oriented docs, saved Examples |
 | `Gym-Backend-Local.postman_environment.json` | Local `baseUrl` (`http://localhost:3000`) |
 | `Gym-Backend-Dev.postman_environment.json` | Dev environment variables (same keys as Local) |
 
@@ -51,6 +51,10 @@ Open **Examples** on a request for concrete success and error JSON. Shared error
    1. **Leads → Create Lead** (stores `leadId`; may return soft `warnings`)
    2. **Change Lead Status** / **Update Lead** (set `followUpDate`)
    3. **List Due Follow-ups** → **Soft Delete Lead**
+10. Plan catalog (Admin at gym; needs `gymOrgId`):
+   1. **Plans → Create BASE Plan** (stores `planId`)
+   2. Optional **Create ADDON Plan** (`capability: TRAINER_COACHING`)
+   3. **List Plans** / **Get Plan** / **Update Plan** → **Soft Delete Plan**
 
 `baseUrl` defaults to `http://localhost:3000` (override for hosted environments).
 
