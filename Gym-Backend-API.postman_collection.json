@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "a442e881-b024-4178-89ad-accb66ac1d58",
     "name": "Gym Backend API",
-    "description": "HTTP collection for the gymBackend Express API.\n\nSetup:\n1. Select environment Gym Backend — Local (or set baseUrl).\n2. Set email (+ lane CLIENT|STAFF and name for first-time users).\n3. Run Auth > Email OTP > Request OTP — note isNewUser; paste OTP into otpToken.\n4. Run Verify OTP (include lane only when isNewUser was true) — stores accessToken, refreshToken, userId.\n5. Authenticated requests use collection Bearer {{accessToken}}.\n\nAuth model:\n- Public: /health, /auth/otp/request, /auth/otp/verify, /auth/refresh\n- Bearer identity: /auth/google/complete\n- Bearer provisioned: /auth/me, /gym-orgs/*\n",
+    "description": "HTTP collection for the gymBackend Express API.\n\nSetup:\n1. Select environment Gym Backend — Local (or set baseUrl).\n2. Set email (+ lane CLIENT|STAFF and name for first-time users).\n3. Run Auth > Email OTP > Request OTP — note isNewUser; paste OTP into otpToken.\n4. Run Verify OTP (include lane only when isNewUser was true) — stores accessToken, refreshToken, userId.\n5. Authenticated requests use collection Bearer {{accessToken}}.\n\nAuth model:\n- Public: /health, /auth/otp/request, /auth/otp/verify, /auth/refresh\n- Bearer identity: /auth/google/complete\n- Bearer provisioned: /auth/me, /gym-orgs/*\n\nMembership invites: see gymBackend docs/membership-invites.md and folder Membership Invites Examples.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -4443,7 +4443,7 @@
     },
     {
       "name": "Membership Invites",
-      "description": "Stint 1.2–1.4 membership invites (A6, C2–C2c): Admin create/list/revoke under `/gym-orgs/:gymOrgId/membership-invites`; CLIENT inbox/accept under `/membership-invites`; DataGrants under `/gym-orgs/:gymOrgId/my-data-grants` while ACTIVE. Admin needs live gym_admins + active BASE `planId`. Accept snapshots subscriptions + required DOB/HEIGHT/WEIGHT grants.",
+      "description": "Admin create/list/revoke + Client inbox/accept + my-data-grants.\n\nSee gymBackend docs/membership-invites.md for full request/response examples.",
       "item": [
         {
           "name": "Create Membership Invite",
@@ -4470,7 +4470,7 @@
                 "membership-invites"
               ]
             },
-            "description": "POST /gym-orgs/:gymOrgId/membership-invites — create a PENDING client membership invite.\n\n**Auth:** Bearer ADMIN at gym (`{{accessToken}}`)\n**Path:** `gymOrgId` — set by Create Gym Org\n**Prereq:** active BASE plan in `planId` (Create BASE Plan)\n**Request body (JSON):**\n- `inviteeName` string (required)\n- `invitedEmail` string (required; normalized lower)\n- `inviteePhone` string (optional)\n- `basePlanId` uuid (required)\n- `basePaymentStatus` `paid`|`unpaid`|`partial` (required)\n- `addonPlanId` + `addonPaymentStatus` (optional pair)\n- `expiresAt` ISO datetime (optional; default +14d)\n\n**Success:** `201` `{ membershipInvite }`\n**Errors:** `401`; `403` PLAN_FORBIDDEN; `409` unique pending email; `422` invalid invitee/plan/validation.",
+            "description": "POST /gym-orgs/:gymOrgId/membership-invites — create a PENDING client membership invite.\n\n**Auth:** Bearer ADMIN at gym (`{{accessToken}}`)\n**Path:** `gymOrgId` — set by Create Gym Org\n**Prereq:** active BASE plan in `planId` (Create BASE Plan)\n**Request body (JSON):**\n- `inviteeName` string (required)\n- `invitedEmail` string (required; normalized lower)\n- `inviteePhone` string (optional)\n- `basePlanId` uuid (required)\n- `basePaymentStatus` `paid`|`unpaid`|`partial` (required)\n- `addonPlanId` + `addonPaymentStatus` (optional pair; TRAINER_COACHING ADDON)\n- `expiresAt` ISO datetime (optional; default +14d)\n\n**Response type:** `application/json`\n**Success:** `201` `{ membershipInvite }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` PLAN_FORBIDDEN; `409` CONFLICT; `422` INVALID_INVITE_PLAN / INVALID_MEMBERSHIP_INVITEE / VALIDATION_ERROR.\n\nSee saved Examples. Full guide: gymBackend `docs/membership-invites.md`.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"inviteeName\": \"Alex Client\",\n  \"invitedEmail\": \"alex.client@example.com\",\n  \"inviteePhone\": \"+15551234567\",\n  \"basePlanId\": \"{{planId}}\",\n  \"basePaymentStatus\": \"unpaid\"\n}",
@@ -4504,7 +4504,152 @@
               }
             }
           ],
-          "response": []
+          "response": [
+            {
+              "name": "201 Created — membership invite",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/membership-invites",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "membership-invites"
+                  ]
+                },
+                "description": "POST /gym-orgs/:gymOrgId/membership-invites — create a PENDING client membership invite.\n\n**Auth:** Bearer ADMIN at gym (`{{accessToken}}`)\n**Path:** `gymOrgId` — set by Create Gym Org\n**Prereq:** active BASE plan in `planId` (Create BASE Plan)\n**Request body (JSON):**\n- `inviteeName` string (required)\n- `invitedEmail` string (required; normalized lower)\n- `inviteePhone` string (optional)\n- `basePlanId` uuid (required)\n- `basePaymentStatus` `paid`|`unpaid`|`partial` (required)\n- `addonPlanId` + `addonPaymentStatus` (optional pair; TRAINER_COACHING ADDON)\n- `expiresAt` ISO datetime (optional; default +14d)\n\n**Response type:** `application/json`\n**Success:** `201` `{ membershipInvite }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` PLAN_FORBIDDEN; `409` CONFLICT; `422` INVALID_INVITE_PLAN / INVALID_MEMBERSHIP_INVITEE / VALIDATION_ERROR.\n\nSee saved Examples. Full guide: gymBackend `docs/membership-invites.md`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"inviteeName\": \"Alex Client\",\n  \"invitedEmail\": \"alex.client@example.com\",\n  \"inviteePhone\": \"+15551234567\",\n  \"basePlanId\": \"{{planId}}\",\n  \"basePaymentStatus\": \"unpaid\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"membershipInvite\": {\n    \"id\": \"11111111-1111-4111-8111-111111111111\",\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"invitedEmail\": \"alex.client@example.com\",\n    \"invitedUserId\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n    \"inviteeName\": \"Alex Client\",\n    \"inviteePhone\": \"+15551234567\",\n    \"basePlanId\": \"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb\",\n    \"basePaymentStatus\": \"unpaid\",\n    \"addonPlanId\": null,\n    \"addonPaymentStatus\": null,\n    \"status\": \"PENDING\",\n    \"expiresAt\": \"2026-08-22T00:00:00.000Z\",\n    \"createdBy\": \"cccccccc-cccc-4ccc-8ccc-cccccccccccc\",\n    \"acceptedAt\": null,\n    \"acceptedMembershipId\": null,\n    \"createdAt\": \"2026-08-08T12:00:00.000Z\",\n    \"updatedAt\": \"2026-08-08T12:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "422 — invalid invite plan",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/membership-invites",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "membership-invites"
+                  ]
+                },
+                "description": "POST /gym-orgs/:gymOrgId/membership-invites — create a PENDING client membership invite.\n\n**Auth:** Bearer ADMIN at gym (`{{accessToken}}`)\n**Path:** `gymOrgId` — set by Create Gym Org\n**Prereq:** active BASE plan in `planId` (Create BASE Plan)\n**Request body (JSON):**\n- `inviteeName` string (required)\n- `invitedEmail` string (required; normalized lower)\n- `inviteePhone` string (optional)\n- `basePlanId` uuid (required)\n- `basePaymentStatus` `paid`|`unpaid`|`partial` (required)\n- `addonPlanId` + `addonPaymentStatus` (optional pair; TRAINER_COACHING ADDON)\n- `expiresAt` ISO datetime (optional; default +14d)\n\n**Response type:** `application/json`\n**Success:** `201` `{ membershipInvite }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` PLAN_FORBIDDEN; `409` CONFLICT; `422` INVALID_INVITE_PLAN / INVALID_MEMBERSHIP_INVITEE / VALIDATION_ERROR.\n\nSee saved Examples. Full guide: gymBackend `docs/membership-invites.md`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"inviteeName\": \"Alex Client\",\n  \"invitedEmail\": \"alex.client@example.com\",\n  \"inviteePhone\": \"+15551234567\",\n  \"basePlanId\": \"{{planId}}\",\n  \"basePaymentStatus\": \"unpaid\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"INVALID_INVITE_PLAN\",\n    \"message\": \"Base plan must be an active BASE plan for this gym\"\n  }\n}"
+            },
+            {
+              "name": "422 — staff invitee",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/membership-invites",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "membership-invites"
+                  ]
+                },
+                "description": "POST /gym-orgs/:gymOrgId/membership-invites — create a PENDING client membership invite.\n\n**Auth:** Bearer ADMIN at gym (`{{accessToken}}`)\n**Path:** `gymOrgId` — set by Create Gym Org\n**Prereq:** active BASE plan in `planId` (Create BASE Plan)\n**Request body (JSON):**\n- `inviteeName` string (required)\n- `invitedEmail` string (required; normalized lower)\n- `inviteePhone` string (optional)\n- `basePlanId` uuid (required)\n- `basePaymentStatus` `paid`|`unpaid`|`partial` (required)\n- `addonPlanId` + `addonPaymentStatus` (optional pair; TRAINER_COACHING ADDON)\n- `expiresAt` ISO datetime (optional; default +14d)\n\n**Response type:** `application/json`\n**Success:** `201` `{ membershipInvite }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` PLAN_FORBIDDEN; `409` CONFLICT; `422` INVALID_INVITE_PLAN / INVALID_MEMBERSHIP_INVITEE / VALIDATION_ERROR.\n\nSee saved Examples. Full guide: gymBackend `docs/membership-invites.md`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"inviteeName\": \"Alex Client\",\n  \"invitedEmail\": \"alex.client@example.com\",\n  \"inviteePhone\": \"+15551234567\",\n  \"basePlanId\": \"{{planId}}\",\n  \"basePaymentStatus\": \"unpaid\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"INVALID_MEMBERSHIP_INVITEE\",\n    \"message\": \"Cannot invite a staff account with a membership invite\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "List Membership Invites",
@@ -4541,9 +4686,100 @@
                 }
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/membership-invites — paginated gym invite list. PENDING past `expiresAt` may surface as computed EXPIRED.\n\n**Auth:** Bearer ADMIN at gym\n**Success:** `200` `{ membershipInvites: { items, total, limit, offset } }`\n**Errors:** `401`; `403` PLAN_FORBIDDEN."
+            "description": "GET /gym-orgs/:gymOrgId/membership-invites — paginated gym invite list. PENDING past `expiresAt` may surface as computed EXPIRED.\n\n**Auth:** Bearer ADMIN at gym\n**Query:** `limit` (default 20, max 100), `offset`\n\n**Response type:** `application/json`\n**Success:** `200` `{ membershipInvites: { items, total, limit, offset } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` PLAN_FORBIDDEN.\n\nSee saved Examples."
           },
-          "response": []
+          "response": [
+            {
+              "name": "200 OK — invite list",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/membership-invites?limit=20&offset=0",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "membership-invites"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    }
+                  ]
+                },
+                "description": "GET /gym-orgs/:gymOrgId/membership-invites — paginated gym invite list. PENDING past `expiresAt` may surface as computed EXPIRED.\n\n**Auth:** Bearer ADMIN at gym\n**Query:** `limit` (default 20, max 100), `offset`\n\n**Response type:** `application/json`\n**Success:** `200` `{ membershipInvites: { items, total, limit, offset } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` PLAN_FORBIDDEN.\n\nSee saved Examples."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"membershipInvites\": {\n    \"items\": [\n      {\n        \"id\": \"11111111-1111-4111-8111-111111111111\",\n        \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n        \"invitedEmail\": \"alex.client@example.com\",\n        \"invitedUserId\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n        \"inviteeName\": \"Alex Client\",\n        \"inviteePhone\": \"+15551234567\",\n        \"basePlanId\": \"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb\",\n        \"basePaymentStatus\": \"unpaid\",\n        \"addonPlanId\": null,\n        \"addonPaymentStatus\": null,\n        \"status\": \"PENDING\",\n        \"expiresAt\": \"2026-08-22T00:00:00.000Z\",\n        \"createdBy\": \"cccccccc-cccc-4ccc-8ccc-cccccccccccc\",\n        \"acceptedAt\": null,\n        \"acceptedMembershipId\": null,\n        \"createdAt\": \"2026-08-08T12:00:00.000Z\",\n        \"updatedAt\": \"2026-08-08T12:00:00.000Z\"\n      }\n    ],\n    \"total\": 1,\n    \"limit\": 20,\n    \"offset\": 0\n  }\n}"
+            },
+            {
+              "name": "403 — plan forbidden",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/membership-invites?limit=20&offset=0",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "membership-invites"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    }
+                  ]
+                },
+                "description": "GET /gym-orgs/:gymOrgId/membership-invites — paginated gym invite list. PENDING past `expiresAt` may surface as computed EXPIRED.\n\n**Auth:** Bearer ADMIN at gym\n**Query:** `limit` (default 20, max 100), `offset`\n\n**Response type:** `application/json`\n**Success:** `200` `{ membershipInvites: { items, total, limit, offset } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `403` PLAN_FORBIDDEN.\n\nSee saved Examples."
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"PLAN_FORBIDDEN\",\n    \"message\": \"Not allowed to manage plans for this gym\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "Revoke Membership Invite",
@@ -4572,9 +4808,84 @@
                 "revoke"
               ]
             },
-            "description": "POST /gym-orgs/:gymOrgId/membership-invites/:inviteId/revoke — PENDING → REVOKED only.\n\n**Auth:** Bearer ADMIN at gym\n**Success:** `200` `{ membershipInvite }` with status REVOKED\n**Errors:** `401`; `403` PLAN_FORBIDDEN; `404` NOT_FOUND; `409` MEMBERSHIP_INVITE_INVALID_TRANSITION."
+            "description": "POST /gym-orgs/:gymOrgId/membership-invites/:inviteId/revoke — PENDING → REVOKED only.\n\n**Auth:** Bearer ADMIN at gym\n**Path:** `inviteId` — `{{membershipInviteId}}`\n\n**Response type:** `application/json`\n**Success:** `200` `{ membershipInvite }` with status REVOKED\n**Errors:** `401`; `403` PLAN_FORBIDDEN; `404` NOT_FOUND; `409` MEMBERSHIP_INVITE_INVALID_TRANSITION.\n\nSee saved Examples."
           },
-          "response": []
+          "response": [
+            {
+              "name": "200 OK — revoked",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/membership-invites/{{membershipInviteId}}/revoke",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "membership-invites",
+                    "{{membershipInviteId}}",
+                    "revoke"
+                  ]
+                },
+                "description": "POST /gym-orgs/:gymOrgId/membership-invites/:inviteId/revoke — PENDING → REVOKED only.\n\n**Auth:** Bearer ADMIN at gym\n**Path:** `inviteId` — `{{membershipInviteId}}`\n\n**Response type:** `application/json`\n**Success:** `200` `{ membershipInvite }` with status REVOKED\n**Errors:** `401`; `403` PLAN_FORBIDDEN; `404` NOT_FOUND; `409` MEMBERSHIP_INVITE_INVALID_TRANSITION.\n\nSee saved Examples."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"membershipInvite\": {\n    \"id\": \"11111111-1111-4111-8111-111111111111\",\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"invitedEmail\": \"alex.client@example.com\",\n    \"invitedUserId\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n    \"inviteeName\": \"Alex Client\",\n    \"inviteePhone\": \"+15551234567\",\n    \"basePlanId\": \"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb\",\n    \"basePaymentStatus\": \"unpaid\",\n    \"addonPlanId\": null,\n    \"addonPaymentStatus\": null,\n    \"status\": \"REVOKED\",\n    \"expiresAt\": \"2026-08-22T00:00:00.000Z\",\n    \"createdBy\": \"cccccccc-cccc-4ccc-8ccc-cccccccccccc\",\n    \"acceptedAt\": null,\n    \"acceptedMembershipId\": null,\n    \"createdAt\": \"2026-08-08T12:00:00.000Z\",\n    \"updatedAt\": \"2026-08-08T12:10:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "409 — invalid transition",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/membership-invites/{{membershipInviteId}}/revoke",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "membership-invites",
+                    "{{membershipInviteId}}",
+                    "revoke"
+                  ]
+                },
+                "description": "POST /gym-orgs/:gymOrgId/membership-invites/:inviteId/revoke — PENDING → REVOKED only.\n\n**Auth:** Bearer ADMIN at gym\n**Path:** `inviteId` — `{{membershipInviteId}}`\n\n**Response type:** `application/json`\n**Success:** `200` `{ membershipInvite }` with status REVOKED\n**Errors:** `401`; `403` PLAN_FORBIDDEN; `404` NOT_FOUND; `409` MEMBERSHIP_INVITE_INVALID_TRANSITION.\n\nSee saved Examples."
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"MEMBERSHIP_INVITE_INVALID_TRANSITION\",\n    \"message\": \"Only PENDING membership invites can be revoked\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "Membership Invite Inbox",
@@ -4606,7 +4917,7 @@
                 }
               ]
             },
-            "description": "GET /membership-invites/inbox — CLIENT invitee inbox (paginated). Matches `invited_user_id` or pending email. Each item embeds `gym` profile.\n\n**Auth:** Bearer CLIENT `{{accessToken}}`\n**Query:** `limit`, `offset`\n\n**Success:** `200` `{ membershipInvites: { items, total, limit, offset } }` — items include nested `gym`\n**Errors:** `401`; `403` MEMBERSHIP_INVITE_FORBIDDEN."
+            "description": "GET /membership-invites/inbox — CLIENT invitee inbox (paginated). Matches `invited_user_id` or pending email. Each item embeds `gym` profile.\n\n**Auth:** Bearer CLIENT `{{accessToken}}`\n**Query:** `limit`, `offset`\n\n**Response type:** `application/json`\n**Success:** `200` `{ membershipInvites: { items, total, limit, offset } }` — items include nested `gym`\n**Errors:** `401`; `403` MEMBERSHIP_INVITE_FORBIDDEN.\n\nSee saved Examples."
           },
           "event": [
             {
@@ -4631,7 +4942,96 @@
               }
             }
           ],
-          "response": []
+          "response": [
+            {
+              "name": "200 OK — inbox",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/membership-invites/inbox?limit=20&offset=0",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "membership-invites",
+                    "inbox"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    }
+                  ]
+                },
+                "description": "GET /membership-invites/inbox — CLIENT invitee inbox (paginated). Matches `invited_user_id` or pending email. Each item embeds `gym` profile.\n\n**Auth:** Bearer CLIENT `{{accessToken}}`\n**Query:** `limit`, `offset`\n\n**Response type:** `application/json`\n**Success:** `200` `{ membershipInvites: { items, total, limit, offset } }` — items include nested `gym`\n**Errors:** `401`; `403` MEMBERSHIP_INVITE_FORBIDDEN.\n\nSee saved Examples."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"membershipInvites\": {\n    \"items\": [\n      {\n        \"id\": \"11111111-1111-4111-8111-111111111111\",\n        \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n        \"invitedEmail\": \"alex.client@example.com\",\n        \"invitedUserId\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n        \"inviteeName\": \"Alex Client\",\n        \"inviteePhone\": \"+15551234567\",\n        \"basePlanId\": \"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb\",\n        \"basePaymentStatus\": \"unpaid\",\n        \"addonPlanId\": null,\n        \"addonPaymentStatus\": null,\n        \"status\": \"PENDING\",\n        \"expiresAt\": \"2026-08-22T00:00:00.000Z\",\n        \"createdBy\": \"cccccccc-cccc-4ccc-8ccc-cccccccccccc\",\n        \"acceptedAt\": null,\n        \"acceptedMembershipId\": null,\n        \"createdAt\": \"2026-08-08T12:00:00.000Z\",\n        \"updatedAt\": \"2026-08-08T12:00:00.000Z\",\n        \"gym\": {\n          \"id\": \"33333333-3333-4333-8333-333333333333\",\n          \"name\": \"Iron Temple\",\n          \"address\": \"12 Lift St\",\n          \"contactPhone\": \"+15550001111\",\n          \"contactEmail\": \"desk@irontemple.example\",\n          \"logoUrl\": null,\n          \"timezone\": \"Asia/Kolkata\"\n        }\n      }\n    ],\n    \"total\": 1,\n    \"limit\": 20,\n    \"offset\": 0\n  }\n}"
+            },
+            {
+              "name": "403 — invite forbidden",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/membership-invites/inbox?limit=20&offset=0",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "membership-invites",
+                    "inbox"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    }
+                  ]
+                },
+                "description": "GET /membership-invites/inbox — CLIENT invitee inbox (paginated). Matches `invited_user_id` or pending email. Each item embeds `gym` profile.\n\n**Auth:** Bearer CLIENT `{{accessToken}}`\n**Query:** `limit`, `offset`\n\n**Response type:** `application/json`\n**Success:** `200` `{ membershipInvites: { items, total, limit, offset } }` — items include nested `gym`\n**Errors:** `401`; `403` MEMBERSHIP_INVITE_FORBIDDEN.\n\nSee saved Examples."
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"MEMBERSHIP_INVITE_FORBIDDEN\",\n    \"message\": \"Only CLIENT accounts can view membership invite inbox\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "Accept Membership Invite",
@@ -4658,7 +5058,7 @@
                 "accept"
               ]
             },
-            "description": "POST /membership-invites/:inviteId/accept — CLIENT accept PENDING invite. Atomic: ACTIVE membership + base (±addon) subscription snapshots + required DOB/HEIGHT/WEIGHT grants + optional checklist. Blocks if already ACTIVE elsewhere.\n\n**Auth:** Bearer CLIENT matching invite email/user\n**Body (JSON):**\n- `optionalProfileAttributes` string[] (`GENDER`|`MEDICAL_NOTES`; default [])\n- `optionalClassGrants` string[] (`PROGRESS`|`CALORIES`|`WEARABLES`|`DIET_PLANS`|`WORKOUT_PLANS`; default [])\n\n**Success:** `200` `{ membershipInvite, membershipId, grants }`\n**Errors:** `401`; `403` MEMBERSHIP_INVITE_FORBIDDEN; `404`; `409` EXPIRED / ACTIVE_MEMBERSHIP_CONFLICT; `422` validation.",
+            "description": "POST /membership-invites/:inviteId/accept — CLIENT accept PENDING invite. Atomic: ACTIVE membership + base (±addon) subscription snapshots + required DOB/HEIGHT/WEIGHT grants + optional checklist. Blocks if already ACTIVE elsewhere.\n\n**Auth:** Bearer CLIENT matching invite email/user\n**Path:** `inviteId` — `{{membershipInviteId}}`\n**Body (JSON):**\n- `optionalProfileAttributes` string[] (`GENDER`|`MEDICAL_NOTES`; default [])\n- `optionalClassGrants` string[] (`PROGRESS`|`CALORIES`|`WEARABLES`|`DIET_PLANS`|`WORKOUT_PLANS`; default [])\n\n**Response type:** `application/json`\n**Success:** `200` `{ membershipInvite, membershipId, grants }` — test script stores `membershipId`\n**Errors:** `401`; `403` MEMBERSHIP_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` MEMBERSHIP_INVITE_EXPIRED / ACTIVE_MEMBERSHIP_CONFLICT; `422` VALIDATION_ERROR.\n\nSee saved Examples. Full guide: gymBackend `docs/membership-invites.md`.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"optionalProfileAttributes\": [\"GENDER\"],\n  \"optionalClassGrants\": [\"PROGRESS\"]\n}",
@@ -4692,7 +5092,152 @@
               }
             }
           ],
-          "response": []
+          "response": [
+            {
+              "name": "200 OK — accepted",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/membership-invites/{{membershipInviteId}}/accept",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "membership-invites",
+                    "{{membershipInviteId}}",
+                    "accept"
+                  ]
+                },
+                "description": "POST /membership-invites/:inviteId/accept — CLIENT accept PENDING invite. Atomic: ACTIVE membership + base (±addon) subscription snapshots + required DOB/HEIGHT/WEIGHT grants + optional checklist. Blocks if already ACTIVE elsewhere.\n\n**Auth:** Bearer CLIENT matching invite email/user\n**Path:** `inviteId` — `{{membershipInviteId}}`\n**Body (JSON):**\n- `optionalProfileAttributes` string[] (`GENDER`|`MEDICAL_NOTES`; default [])\n- `optionalClassGrants` string[] (`PROGRESS`|`CALORIES`|`WEARABLES`|`DIET_PLANS`|`WORKOUT_PLANS`; default [])\n\n**Response type:** `application/json`\n**Success:** `200` `{ membershipInvite, membershipId, grants }` — test script stores `membershipId`\n**Errors:** `401`; `403` MEMBERSHIP_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` MEMBERSHIP_INVITE_EXPIRED / ACTIVE_MEMBERSHIP_CONFLICT; `422` VALIDATION_ERROR.\n\nSee saved Examples. Full guide: gymBackend `docs/membership-invites.md`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"optionalProfileAttributes\": [\"GENDER\"],\n  \"optionalClassGrants\": [\"PROGRESS\"]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"membershipInvite\": {\n    \"id\": \"11111111-1111-4111-8111-111111111111\",\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"invitedEmail\": \"alex.client@example.com\",\n    \"invitedUserId\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n    \"inviteeName\": \"Alex Client\",\n    \"inviteePhone\": \"+15551234567\",\n    \"basePlanId\": \"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb\",\n    \"basePaymentStatus\": \"unpaid\",\n    \"addonPlanId\": null,\n    \"addonPaymentStatus\": null,\n    \"status\": \"ACCEPTED\",\n    \"expiresAt\": \"2026-08-22T00:00:00.000Z\",\n    \"createdBy\": \"cccccccc-cccc-4ccc-8ccc-cccccccccccc\",\n    \"acceptedAt\": \"2026-08-08T12:05:00.000Z\",\n    \"acceptedMembershipId\": \"dddddddd-dddd-4ddd-8ddd-dddddddddddd\",\n    \"createdAt\": \"2026-08-08T12:00:00.000Z\",\n    \"updatedAt\": \"2026-08-08T12:05:00.000Z\"\n  },\n  \"membershipId\": \"dddddddd-dddd-4ddd-8ddd-dddddddddddd\",\n  \"grants\": {\n    \"profileAttributes\": [\n      \"DOB\",\n      \"HEIGHT\",\n      \"WEIGHT\",\n      \"GENDER\"\n    ],\n    \"classGrants\": [\n      \"PROGRESS\"\n    ]\n  }\n}"
+            },
+            {
+              "name": "409 — already active elsewhere",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/membership-invites/{{membershipInviteId}}/accept",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "membership-invites",
+                    "{{membershipInviteId}}",
+                    "accept"
+                  ]
+                },
+                "description": "POST /membership-invites/:inviteId/accept — CLIENT accept PENDING invite. Atomic: ACTIVE membership + base (±addon) subscription snapshots + required DOB/HEIGHT/WEIGHT grants + optional checklist. Blocks if already ACTIVE elsewhere.\n\n**Auth:** Bearer CLIENT matching invite email/user\n**Path:** `inviteId` — `{{membershipInviteId}}`\n**Body (JSON):**\n- `optionalProfileAttributes` string[] (`GENDER`|`MEDICAL_NOTES`; default [])\n- `optionalClassGrants` string[] (`PROGRESS`|`CALORIES`|`WEARABLES`|`DIET_PLANS`|`WORKOUT_PLANS`; default [])\n\n**Response type:** `application/json`\n**Success:** `200` `{ membershipInvite, membershipId, grants }` — test script stores `membershipId`\n**Errors:** `401`; `403` MEMBERSHIP_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` MEMBERSHIP_INVITE_EXPIRED / ACTIVE_MEMBERSHIP_CONFLICT; `422` VALIDATION_ERROR.\n\nSee saved Examples. Full guide: gymBackend `docs/membership-invites.md`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"optionalProfileAttributes\": [\"GENDER\"],\n  \"optionalClassGrants\": [\"PROGRESS\"]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"ACTIVE_MEMBERSHIP_CONFLICT\",\n    \"message\": \"Client already has an active membership\"\n  }\n}"
+            },
+            {
+              "name": "409 — invite expired",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/membership-invites/{{membershipInviteId}}/accept",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "membership-invites",
+                    "{{membershipInviteId}}",
+                    "accept"
+                  ]
+                },
+                "description": "POST /membership-invites/:inviteId/accept — CLIENT accept PENDING invite. Atomic: ACTIVE membership + base (±addon) subscription snapshots + required DOB/HEIGHT/WEIGHT grants + optional checklist. Blocks if already ACTIVE elsewhere.\n\n**Auth:** Bearer CLIENT matching invite email/user\n**Path:** `inviteId` — `{{membershipInviteId}}`\n**Body (JSON):**\n- `optionalProfileAttributes` string[] (`GENDER`|`MEDICAL_NOTES`; default [])\n- `optionalClassGrants` string[] (`PROGRESS`|`CALORIES`|`WEARABLES`|`DIET_PLANS`|`WORKOUT_PLANS`; default [])\n\n**Response type:** `application/json`\n**Success:** `200` `{ membershipInvite, membershipId, grants }` — test script stores `membershipId`\n**Errors:** `401`; `403` MEMBERSHIP_INVITE_FORBIDDEN; `404` NOT_FOUND; `409` MEMBERSHIP_INVITE_EXPIRED / ACTIVE_MEMBERSHIP_CONFLICT; `422` VALIDATION_ERROR.\n\nSee saved Examples. Full guide: gymBackend `docs/membership-invites.md`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"optionalProfileAttributes\": [\"GENDER\"],\n  \"optionalClassGrants\": [\"PROGRESS\"]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"MEMBERSHIP_INVITE_EXPIRED\",\n    \"message\": \"Membership invite has expired\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "Get My Data Grants",
@@ -4715,9 +5260,80 @@
                 "my-data-grants"
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/my-data-grants — list live profile-attribute + class grants for the CLIENT at this gym.\n\n**Auth:** Bearer CLIENT with ACTIVE membership at gym\n**Success:** `200` `{ dataGrants: { gymOrgId, clientUserId, profileAttributes, classGrants } }`\n**Errors:** `401`; `403` DATA_GRANT_FORBIDDEN; `404` no ACTIVE membership."
+            "description": "GET /gym-orgs/:gymOrgId/my-data-grants — list live profile-attribute + class grants for the CLIENT at this gym.\n\n**Auth:** Bearer CLIENT with ACTIVE membership at gym\n**Path:** `gymOrgId`\n\n**Response type:** `application/json`\n**Success:** `200` `{ dataGrants: { gymOrgId, clientUserId, profileAttributes, classGrants } }`\n**Errors:** `401`; `403` DATA_GRANT_FORBIDDEN; `404` NOT_FOUND (no ACTIVE membership).\n\nSee saved Examples."
           },
-          "response": []
+          "response": [
+            {
+              "name": "200 OK — data grants",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/my-data-grants",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "my-data-grants"
+                  ]
+                },
+                "description": "GET /gym-orgs/:gymOrgId/my-data-grants — list live profile-attribute + class grants for the CLIENT at this gym.\n\n**Auth:** Bearer CLIENT with ACTIVE membership at gym\n**Path:** `gymOrgId`\n\n**Response type:** `application/json`\n**Success:** `200` `{ dataGrants: { gymOrgId, clientUserId, profileAttributes, classGrants } }`\n**Errors:** `401`; `403` DATA_GRANT_FORBIDDEN; `404` NOT_FOUND (no ACTIVE membership).\n\nSee saved Examples."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"dataGrants\": {\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"clientUserId\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n    \"profileAttributes\": [\n      \"DOB\",\n      \"HEIGHT\",\n      \"WEIGHT\",\n      \"GENDER\"\n    ],\n    \"classGrants\": [\n      \"PROGRESS\"\n    ]\n  }\n}"
+            },
+            {
+              "name": "403 — data grant forbidden",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/my-data-grants",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "my-data-grants"
+                  ]
+                },
+                "description": "GET /gym-orgs/:gymOrgId/my-data-grants — list live profile-attribute + class grants for the CLIENT at this gym.\n\n**Auth:** Bearer CLIENT with ACTIVE membership at gym\n**Path:** `gymOrgId`\n\n**Response type:** `application/json`\n**Success:** `200` `{ dataGrants: { gymOrgId, clientUserId, profileAttributes, classGrants } }`\n**Errors:** `401`; `403` DATA_GRANT_FORBIDDEN; `404` NOT_FOUND (no ACTIVE membership).\n\nSee saved Examples."
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"DATA_GRANT_FORBIDDEN\",\n    \"message\": \"Not allowed to manage data grants for this gym\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "Update My Data Grants",
@@ -4744,7 +5360,7 @@
                 "my-data-grants"
               ]
             },
-            "description": "PUT /gym-orgs/:gymOrgId/my-data-grants — replace optional grant checklist while ACTIVE. Required DOB/HEIGHT/WEIGHT stay sticky (cannot revoke).\n\n**Auth:** Bearer CLIENT with ACTIVE membership\n**Body (JSON):**\n- `optionalProfileAttributes` (`GENDER`|`MEDICAL_NOTES`)\n- `optionalClassGrants` (`PROGRESS`|`CALORIES`|`WEARABLES`|`DIET_PLANS`|`WORKOUT_PLANS`)\n\n**Success:** `200` `{ dataGrants }`\n**Errors:** `401`; `403` DATA_GRANT_FORBIDDEN; `404` no ACTIVE membership; `422` validation.",
+            "description": "PUT /gym-orgs/:gymOrgId/my-data-grants — replace optional grant checklist while ACTIVE. Required DOB/HEIGHT/WEIGHT stay sticky (cannot revoke).\n\n**Auth:** Bearer CLIENT with ACTIVE membership\n**Body (JSON):**\n- `optionalProfileAttributes` (`GENDER`|`MEDICAL_NOTES`)\n- `optionalClassGrants` (`PROGRESS`|`CALORIES`|`WEARABLES`|`DIET_PLANS`|`WORKOUT_PLANS`)\n\n**Response type:** `application/json`\n**Success:** `200` `{ dataGrants }`\n**Errors:** `401`; `403` DATA_GRANT_FORBIDDEN; `404` NOT_FOUND; `422` VALIDATION_ERROR.\n\nSee saved Examples. Full guide: gymBackend `docs/membership-invites.md`.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"optionalProfileAttributes\": [\"MEDICAL_NOTES\"],\n  \"optionalClassGrants\": [\"PROGRESS\", \"CALORIES\"]\n}",
@@ -4755,7 +5371,104 @@
               }
             }
           },
-          "response": []
+          "response": [
+            {
+              "name": "200 OK — updated grants",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/my-data-grants",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "my-data-grants"
+                  ]
+                },
+                "description": "PUT /gym-orgs/:gymOrgId/my-data-grants — replace optional grant checklist while ACTIVE. Required DOB/HEIGHT/WEIGHT stay sticky (cannot revoke).\n\n**Auth:** Bearer CLIENT with ACTIVE membership\n**Body (JSON):**\n- `optionalProfileAttributes` (`GENDER`|`MEDICAL_NOTES`)\n- `optionalClassGrants` (`PROGRESS`|`CALORIES`|`WEARABLES`|`DIET_PLANS`|`WORKOUT_PLANS`)\n\n**Response type:** `application/json`\n**Success:** `200` `{ dataGrants }`\n**Errors:** `401`; `403` DATA_GRANT_FORBIDDEN; `404` NOT_FOUND; `422` VALIDATION_ERROR.\n\nSee saved Examples. Full guide: gymBackend `docs/membership-invites.md`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"optionalProfileAttributes\": [\"MEDICAL_NOTES\"],\n  \"optionalClassGrants\": [\"PROGRESS\", \"CALORIES\"]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"dataGrants\": {\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"clientUserId\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n    \"profileAttributes\": [\n      \"DOB\",\n      \"HEIGHT\",\n      \"WEIGHT\",\n      \"MEDICAL_NOTES\"\n    ],\n    \"classGrants\": [\n      \"PROGRESS\",\n      \"CALORIES\"\n    ]\n  }\n}"
+            },
+            {
+              "name": "404 — no active membership",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/my-data-grants",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "my-data-grants"
+                  ]
+                },
+                "description": "PUT /gym-orgs/:gymOrgId/my-data-grants — replace optional grant checklist while ACTIVE. Required DOB/HEIGHT/WEIGHT stay sticky (cannot revoke).\n\n**Auth:** Bearer CLIENT with ACTIVE membership\n**Body (JSON):**\n- `optionalProfileAttributes` (`GENDER`|`MEDICAL_NOTES`)\n- `optionalClassGrants` (`PROGRESS`|`CALORIES`|`WEARABLES`|`DIET_PLANS`|`WORKOUT_PLANS`)\n\n**Response type:** `application/json`\n**Success:** `200` `{ dataGrants }`\n**Errors:** `401`; `403` DATA_GRANT_FORBIDDEN; `404` NOT_FOUND; `422` VALIDATION_ERROR.\n\nSee saved Examples. Full guide: gymBackend `docs/membership-invites.md`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"optionalProfileAttributes\": [\"MEDICAL_NOTES\"],\n  \"optionalClassGrants\": [\"PROGRESS\", \"CALORIES\"]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"Active membership not found for this gym\"\n  }\n}"
+            }
+          ]
         }
       ]
     }

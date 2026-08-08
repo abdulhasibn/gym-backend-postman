@@ -34,7 +34,11 @@ Each request documents:
 - **Success** status + body shape
 - **Errors** with stable `error.code` values
 
-Open **Examples** on a request for concrete success and error JSON. Shared error envelope:
+Open **Examples** on a request for concrete success and error JSON. Membership
+invites also have a written guide in gym-backend
+[`docs/membership-invites.md`](https://github.com/abdulhasibn/gym-backend/blob/main/docs/membership-invites.md).
+
+Shared error envelope:
 
 ```json
 { "error": { "code": "STRING_CODE", "message": "Human-readable message" } }
