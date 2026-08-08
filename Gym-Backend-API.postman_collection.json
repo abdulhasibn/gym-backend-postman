@@ -103,6 +103,12 @@
       "value": "",
       "type": "default",
       "description": "Set by Create Plan (BASE)"
+    },
+    {
+      "key": "membershipInviteId",
+      "value": "",
+      "type": "default",
+      "description": "Set by Create Membership Invite"
     }
   ],
   "item": [
@@ -4426,6 +4432,143 @@
               "body": ""
             }
           ]
+        }
+      ]
+    },
+    {
+      "name": "Membership Invites",
+      "description": "Stint 1.2 membership invites (A6): Admin create/list/revoke under `/gym-orgs/:gymOrgId/membership-invites`. Requires ADMIN + live gym_admins. Needs an active BASE plan (`planId`). Optional ADDON with TRAINER_COACHING. Client inbox/accept is Phase 3.",
+      "item": [
+        {
+          "name": "Create Membership Invite",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/membership-invites",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "membership-invites"
+              ]
+            },
+            "description": "POST /gym-orgs/:gymOrgId/membership-invites — create a PENDING client membership invite.\n\n**Auth:** Bearer ADMIN at gym (`{{accessToken}}`)\n**Path:** `gymOrgId` — set by Create Gym Org\n**Prereq:** active BASE plan in `planId` (Create BASE Plan)\n**Request body (JSON):**\n- `inviteeName` string (required)\n- `invitedEmail` string (required; normalized lower)\n- `inviteePhone` string (optional)\n- `basePlanId` uuid (required)\n- `basePaymentStatus` `paid`|`unpaid`|`partial` (required)\n- `addonPlanId` + `addonPaymentStatus` (optional pair)\n- `expiresAt` ISO datetime (optional; default +14d)\n\n**Success:** `201` `{ membershipInvite }`\n**Errors:** `401`; `403` PLAN_FORBIDDEN; `409` unique pending email; `422` invalid invitee/plan/validation.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"inviteeName\": \"Alex Client\",\n  \"invitedEmail\": \"alex.client@example.com\",\n  \"inviteePhone\": \"+15551234567\",\n  \"basePlanId\": \"{{planId}}\",\n  \"basePaymentStatus\": \"unpaid\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('membershipInvite shape', function () {",
+                  "  pm.expect(body).to.have.property('membershipInvite');",
+                  "  pm.expect(body.membershipInvite).to.include.keys('id', 'invitedEmail', 'basePlanId', 'status');",
+                  "  pm.expect(body.membershipInvite.status).to.eql('PENDING');",
+                  "});",
+                  "if (pm.response.code === 201 && body.membershipInvite && body.membershipInvite.id) {",
+                  "  pm.collectionVariables.set('membershipInviteId', body.membershipInvite.id);",
+                  "  pm.environment.set('membershipInviteId', body.membershipInvite.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "List Membership Invites",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/membership-invites?limit=20&offset=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "membership-invites"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "GET /gym-orgs/:gymOrgId/membership-invites — paginated gym invite list. PENDING past `expiresAt` may surface as computed EXPIRED.\n\n**Auth:** Bearer ADMIN at gym\n**Success:** `200` `{ membershipInvites: { items, total, limit, offset } }`\n**Errors:** `401`; `403` PLAN_FORBIDDEN."
+          },
+          "response": []
+        },
+        {
+          "name": "Revoke Membership Invite",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/membership-invites/{{membershipInviteId}}/revoke",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "membership-invites",
+                "{{membershipInviteId}}",
+                "revoke"
+              ]
+            },
+            "description": "POST /gym-orgs/:gymOrgId/membership-invites/:inviteId/revoke — PENDING → REVOKED only.\n\n**Auth:** Bearer ADMIN at gym\n**Success:** `200` `{ membershipInvite }` with status REVOKED\n**Errors:** `401`; `403` PLAN_FORBIDDEN; `404` NOT_FOUND; `409` MEMBERSHIP_INVITE_INVALID_TRANSITION."
+          },
+          "response": []
         }
       ]
     }

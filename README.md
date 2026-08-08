@@ -7,14 +7,14 @@ Share this repo with the team — no paid Postman plan required.
 
 | File | Purpose |
 | ---- | ------- |
-| `Gym-Backend-API.postman_collection.json` | Auth + Gym Orgs + Staff Invites + Leads + Plans, AI-oriented docs, saved Examples |
+| `Gym-Backend-API.postman_collection.json` | Auth + Gym Orgs + Staff Invites + Leads + Plans + Membership Invites, AI-oriented docs, saved Examples |
 | `Gym-Backend-Local.postman_environment.json` | Local `baseUrl` (`http://localhost:3000`) |
 | `Gym-Backend-Dev.postman_environment.json` | Dev environment variables (same keys as Local) |
 
 ## Collection layout
 
 Every feature ships as its own **top-level folder** (same pattern as Gym Orgs, Staff
-Invites, Leads, Plans). Do not leave new feature requests at collection root.
+Invites, Leads, Plans, Membership Invites). Do not leave new feature requests at collection root.
 
 When syncing to the cloud collection via MCP, prefer `putCollection` (async) with
 the git export so folders stay intact — `createCollectionRequest` alone lands
@@ -63,7 +63,9 @@ Open **Examples** on a request for concrete success and error JSON. Shared error
 10. Plan catalog (Admin at gym; needs `gymOrgId`):
    1. **Plans → Create BASE Plan** (stores `planId`)
    2. Optional **Create ADDON Plan** (`capability: TRAINER_COACHING`)
-   3. **List Plans** / **Get Plan** / **Update Plan** → **Soft Delete Plan**
+   3. **Membership Invites → Create Membership Invite** (stores `membershipInviteId`; needs `planId`)
+   4. **List Membership Invites** → **Revoke Membership Invite**
+   5. **List Plans** / **Get Plan** / **Update Plan** → **Soft Delete Plan**
 
 `baseUrl` defaults to `http://localhost:3000` (override for hosted environments).
 
