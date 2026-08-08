@@ -11,6 +11,15 @@ Share this repo with the team — no paid Postman plan required.
 | `Gym-Backend-Local.postman_environment.json` | Local `baseUrl` (`http://localhost:3000`) |
 | `Gym-Backend-Dev.postman_environment.json` | Dev environment variables (same keys as Local) |
 
+## Collection layout
+
+Every feature ships as its own **top-level folder** (same pattern as Gym Orgs, Staff
+Invites, Leads, Plans). Do not leave new feature requests at collection root.
+
+When syncing to the cloud collection via MCP, prefer `putCollection` (async) with
+the git export so folders stay intact — `createCollectionRequest` alone lands
+items at root.
+
 ## Import
 
 1. Clone this repo.
