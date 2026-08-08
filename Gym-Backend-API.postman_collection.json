@@ -109,6 +109,12 @@
       "value": "",
       "type": "default",
       "description": "Set by Create Membership Invite"
+    },
+    {
+      "key": "membershipId",
+      "value": "",
+      "type": "default",
+      "description": "Set by Accept Membership Invite"
     }
   ],
   "item": [
@@ -4437,7 +4443,7 @@
     },
     {
       "name": "Membership Invites",
-      "description": "Stint 1.2 membership invites (A6): Admin create/list/revoke under `/gym-orgs/:gymOrgId/membership-invites`. Requires ADMIN + live gym_admins. Needs an active BASE plan (`planId`). Optional ADDON with TRAINER_COACHING. Client inbox/accept is Phase 3.",
+      "description": "Stint 1.2–1.4 membership invites (A6, C2–C2c): Admin create/list/revoke under `/gym-orgs/:gymOrgId/membership-invites`; CLIENT inbox/accept under `/membership-invites`; DataGrants under `/gym-orgs/:gymOrgId/my-data-grants` while ACTIVE. Admin needs live gym_admins + active BASE `planId`. Accept snapshots subscriptions + required DOB/HEIGHT/WEIGHT grants.",
       "item": [
         {
           "name": "Create Membership Invite",
@@ -4567,6 +4573,187 @@
               ]
             },
             "description": "POST /gym-orgs/:gymOrgId/membership-invites/:inviteId/revoke — PENDING → REVOKED only.\n\n**Auth:** Bearer ADMIN at gym\n**Success:** `200` `{ membershipInvite }` with status REVOKED\n**Errors:** `401`; `403` PLAN_FORBIDDEN; `404` NOT_FOUND; `409` MEMBERSHIP_INVITE_INVALID_TRANSITION."
+          },
+          "response": []
+        },
+        {
+          "name": "Membership Invite Inbox",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/membership-invites/inbox?limit=20&offset=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "membership-invites",
+                "inbox"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "GET /membership-invites/inbox — CLIENT invitee inbox (paginated). Matches `invited_user_id` or pending email. Each item embeds `gym` profile.\n\n**Auth:** Bearer CLIENT `{{accessToken}}`\n**Query:** `limit`, `offset`\n\n**Success:** `200` `{ membershipInvites: { items, total, limit, offset } }` — items include nested `gym`\n**Errors:** `401`; `403` MEMBERSHIP_INVITE_FORBIDDEN."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('inbox page shape', function () {",
+                  "  pm.expect(body).to.have.property('membershipInvites');",
+                  "  pm.expect(body.membershipInvites.items).to.be.an(\"array\");",
+                  "  pm.expect(body.membershipInvites).to.include.keys('total', 'limit', 'offset');",
+                  "});",
+                  "if (body.membershipInvites.items.length > 0) {",
+                  "  pm.collectionVariables.set('membershipInviteId', body.membershipInvites.items[0].id);",
+                  "  pm.environment.set('membershipInviteId', body.membershipInvites.items[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Accept Membership Invite",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/membership-invites/{{membershipInviteId}}/accept",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "membership-invites",
+                "{{membershipInviteId}}",
+                "accept"
+              ]
+            },
+            "description": "POST /membership-invites/:inviteId/accept — CLIENT accept PENDING invite. Atomic: ACTIVE membership + base (±addon) subscription snapshots + required DOB/HEIGHT/WEIGHT grants + optional checklist. Blocks if already ACTIVE elsewhere.\n\n**Auth:** Bearer CLIENT matching invite email/user\n**Body (JSON):**\n- `optionalProfileAttributes` string[] (`GENDER`|`MEDICAL_NOTES`; default [])\n- `optionalClassGrants` string[] (`PROGRESS`|`CALORIES`|`WEARABLES`|`DIET_PLANS`|`WORKOUT_PLANS`; default [])\n\n**Success:** `200` `{ membershipInvite, membershipId, grants }`\n**Errors:** `401`; `403` MEMBERSHIP_INVITE_FORBIDDEN; `404`; `409` EXPIRED / ACTIVE_MEMBERSHIP_CONFLICT; `422` validation.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"optionalProfileAttributes\": [\"GENDER\"],\n  \"optionalClassGrants\": [\"PROGRESS\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('accept shape', function () {",
+                  "  pm.expect(body).to.include.keys('membershipInvite', 'membershipId', 'grants');",
+                  "  pm.expect(body.membershipInvite.status).to.eql('ACCEPTED');",
+                  "  pm.expect(body.grants.profileAttributes).to.include.members(['DOB', 'HEIGHT', 'WEIGHT']);",
+                  "});",
+                  "if (pm.response.code === 200 && body.membershipId) {",
+                  "  pm.collectionVariables.set('membershipId', body.membershipId);",
+                  "  pm.environment.set('membershipId', body.membershipId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Get My Data Grants",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/my-data-grants",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "my-data-grants"
+              ]
+            },
+            "description": "GET /gym-orgs/:gymOrgId/my-data-grants — list live profile-attribute + class grants for the CLIENT at this gym.\n\n**Auth:** Bearer CLIENT with ACTIVE membership at gym\n**Success:** `200` `{ dataGrants: { gymOrgId, clientUserId, profileAttributes, classGrants } }`\n**Errors:** `401`; `403` DATA_GRANT_FORBIDDEN; `404` no ACTIVE membership."
+          },
+          "response": []
+        },
+        {
+          "name": "Update My Data Grants",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/my-data-grants",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "my-data-grants"
+              ]
+            },
+            "description": "PUT /gym-orgs/:gymOrgId/my-data-grants — replace optional grant checklist while ACTIVE. Required DOB/HEIGHT/WEIGHT stay sticky (cannot revoke).\n\n**Auth:** Bearer CLIENT with ACTIVE membership\n**Body (JSON):**\n- `optionalProfileAttributes` (`GENDER`|`MEDICAL_NOTES`)\n- `optionalClassGrants` (`PROGRESS`|`CALORIES`|`WEARABLES`|`DIET_PLANS`|`WORKOUT_PLANS`)\n\n**Success:** `200` `{ dataGrants }`\n**Errors:** `401`; `403` DATA_GRANT_FORBIDDEN; `404` no ACTIVE membership; `422` validation.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"optionalProfileAttributes\": [\"MEDICAL_NOTES\"],\n  \"optionalClassGrants\": [\"PROGRESS\", \"CALORIES\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           },
           "response": []
         }
