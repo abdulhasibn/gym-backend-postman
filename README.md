@@ -7,7 +7,7 @@ Share this repo with the team — no paid Postman plan required.
 
 | File | Purpose |
 | ---- | ------- |
-| `Gym-Backend-API.postman_collection.json` | Auth + Gym Orgs + Staff Invites + Leads + Plans + Membership Invites, AI-oriented docs, saved Examples |
+| `Gym-Backend-API.postman_collection.json` | Auth + Gym Orgs + Staff Invites + Leads + Plans + Membership Invites + Subscriptions, AI-oriented docs, saved Examples |
 | `Gym-Backend-Local.postman_environment.json` | Local `baseUrl` (`http://localhost:3000`) |
 | `Gym-Backend-Dev.postman_environment.json` | Dev environment variables (same keys as Local) |
 
@@ -46,6 +46,7 @@ Written guides in gym-backend (same content, markdown form):
 - [`docs/plans.md`](https://github.com/abdulhasibn/gym-backend/blob/main/docs/plans.md)
 - [`docs/membership-invites.md`](https://github.com/abdulhasibn/gym-backend/blob/main/docs/membership-invites.md)
 - [`docs/leads.md`](https://github.com/abdulhasibn/gym-backend/blob/main/docs/leads.md)
+- [`docs/subscriptions.md`](https://github.com/abdulhasibn/gym-backend/blob/main/docs/subscriptions.md)
 
 Shared error envelope:
 
@@ -82,6 +83,10 @@ Shared error envelope:
    2. Client token (same email): **Membership Invite Inbox** → **Accept Membership Invite** (stores `membershipId`)
    3. Client: **Get My Data Grants** / **Update My Data Grants** while ACTIVE
    4. Or admin: **List Membership Invites** → **Revoke Membership Invite** while still `PENDING`
+12. Subscriptions (after accept; needs `clientUserId` / `subscriptionId`):
+   1. Admin: **Subscriptions → List Client Subscriptions**
+   2. Admin: **Update Subscription Payment** / **Override Subscription Start** (unstarted BASE)
+   3. Client: **List My Subscriptions**
 
 `baseUrl` defaults to `http://localhost:3000` (override for hosted environments).
 
