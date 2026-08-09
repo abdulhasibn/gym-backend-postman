@@ -30,13 +30,22 @@ items at root.
 
 Each request documents:
 
-- **Response type** (`application/json` unless noted)
+- **Every property** — request body, query params, and response fields
+- **Enums** — full allowed value lists (e.g. `paid` \| `unpaid` \| `partial`)
+- **String examples** — realistic sample values
 - **Success** status + body shape
 - **Errors** with stable `error.code` values
 
-Open **Examples** on a request for concrete success and error JSON. Membership
-invites also have a written guide in gym-backend
-[`docs/membership-invites.md`](https://github.com/abdulhasibn/gym-backend/blob/main/docs/membership-invites.md).
+Open a request’s **Docs** panel for the property tables; open **Examples** for
+concrete success/error JSON. Query params also carry per-param descriptions.
+
+Written guides in gym-backend (same content, markdown form):
+
+- [`docs/api.md`](https://github.com/abdulhasibn/gym-backend/blob/main/docs/api.md) — index
+- [`docs/client-auth.md`](https://github.com/abdulhasibn/gym-backend/blob/main/docs/client-auth.md)
+- [`docs/plans.md`](https://github.com/abdulhasibn/gym-backend/blob/main/docs/plans.md)
+- [`docs/membership-invites.md`](https://github.com/abdulhasibn/gym-backend/blob/main/docs/membership-invites.md)
+- [`docs/leads.md`](https://github.com/abdulhasibn/gym-backend/blob/main/docs/leads.md)
 
 Shared error envelope:
 
