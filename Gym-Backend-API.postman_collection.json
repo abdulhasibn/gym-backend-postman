@@ -181,7 +181,7 @@
                 "health"
               ]
             },
-            "description": "GET /health — public liveness probe.\n\n**Auth:** none  \n**Request body:** none\n\n**Response fields (`200`):**\n- `status` (string) — Liveness marker. Example: `\"ok\"`.\n- `timestamp` (string, ISO) — Server time. Example: `\"2026-08-08T12:00:00.000Z\"`.\n\n**Response type:** `application/json`"
+            "description": "**Story:** Anyone can ping this to confirm the API is up before starting a flow.\n\nGET /health — public liveness probe.\n\n**Auth:** none  \n**Request body:** none\n\n**Response fields (`200`):**\n- `status` (string) — Liveness marker. Example: `\"ok\"`.\n- `timestamp` (string, ISO) — Server time. Example: `\"2026-08-08T12:00:00.000Z\"`.\n\n**Response type:** `application/json`"
           },
           "response": [
             {
@@ -304,7 +304,7 @@
                     "request"
                   ]
                 },
-                "description": "POST /auth/otp/request — public. Sends a one-time code and reports whether the client must collect lane.\n\n**Auth:** none\n\n**Request body (JSON):**\n- `email` (required, string) — Inbox that receives the OTP; normalized server-side. Example: `\"member@example.com\"`.\n\n**Success `202`:**\n- `status` (enum) — Delivery accepted. Value: `OTP_SENT`.\n- `isNewUser` (boolean) — `true` = no live app account yet — collect `lane` (+ optional `name`) before Verify; `false` = returning user — omit `lane` on Verify.\n\n**Errors:** `422` VALIDATION_ERROR / EMAIL_ADDRESS_INVALID · `429` AUTH_RATE_LIMITED · `502` OTP_DELIVERY_FAILED\n\nAfter success, paste the emailed OTP into `otpToken`, then run Verify OTP."
+                "description": "**Story:** A user enters their email to receive a one-time code and start signing in or registering.\n\nPOST /auth/otp/request — public. Sends a one-time code and reports whether the client must collect lane.\n\n**Auth:** none\n\n**Request body (JSON):**\n- `email` (required, string) — Inbox that receives the OTP; normalized server-side. Example: `\"member@example.com\"`.\n\n**Success `202`:**\n- `status` (enum) — Delivery accepted. Value: `OTP_SENT`.\n- `isNewUser` (boolean) — `true` = no live app account yet — collect `lane` (+ optional `name`) before Verify; `false` = returning user — omit `lane` on Verify.\n\n**Errors:** `422` VALIDATION_ERROR / EMAIL_ADDRESS_INVALID · `429` AUTH_RATE_LIMITED · `502` OTP_DELIVERY_FAILED\n\nAfter success, paste the emailed OTP into `otpToken`, then run Verify OTP."
               },
               "response": [
                 {
@@ -521,7 +521,7 @@
                     "verify"
                   ]
                 },
-                "description": "POST /auth/otp/verify — public. Sign-in = provision on first success.\n\n**Auth:** none\n\n**Request body (JSON):**\n- `email` (required, string) — Same email used in Request OTP. Example: `\"member@example.com\"`.\n- `token` (required, string) — Digits only (noise stripped); length 6–10 (project OTP is currently **6**). Example: `\"123456\"`.\n- `lane` (first provision only, enum) — Account lane; omit on returning sign-in. Values: `CLIENT`, `STAFF`.\n- `name` (optional, string) — Display name, 1–120 chars after trim. Example: `\"Member\"`.\n\n**Success `200`:** `{ session, user }`\n\n**`session` fields:**\n- `accessToken` (string) — Bearer token (JWT).\n- `refreshToken` (string) — Rotating refresh token.\n- `expiresIn` (number) — Access TTL in seconds. Example: `3600`.\n\n**`user` fields:**\n- `id` (uuid) — App user id. Example: `\"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\"`.\n- `email` (string) — Normalized email. Example: `\"member@example.com\"`.\n- `name` (string) — Display name. Example: `\"Member\"`.\n- `lane` (enum) — Immutable after provision. Values: `CLIENT`, `STAFF`.\n- `roleCode` (enum) — Effective role. Values: `CLIENT`, `STAFF_UNASSIGNED`, `TRAINER`, `ADMIN`.\n- `staffCode` (string or null) — Staff code; null for CLIENT. Example: `\"STAFF-AB12\"` or `null`.\n- `emailVerifiedAt` (string ISO or null) — Verified at. Example: `\"2026-08-02T00:00:00.000Z\"`.\n\nSTAFF first login: `roleCode` = `STAFF_UNASSIGNED`, `staffCode` non-null.\n\n**Errors:** `422` OTP_EXPIRED / VALIDATION_ERROR / EMAIL_NOT_VERIFIED / LANE_REQUIRED · `409` LANE_MISMATCH"
+                "description": "**Story:** A user submits the email code to finish sign-in; first-time users are provisioned as Client or Staff.\n\nPOST /auth/otp/verify — public. Sign-in = provision on first success.\n\n**Auth:** none\n\n**Request body (JSON):**\n- `email` (required, string) — Same email used in Request OTP. Example: `\"member@example.com\"`.\n- `token` (required, string) — Digits only (noise stripped); length 6–10 (project OTP is currently **6**). Example: `\"123456\"`.\n- `lane` (first provision only, enum) — Account lane; omit on returning sign-in. Values: `CLIENT`, `STAFF`.\n- `name` (optional, string) — Display name, 1–120 chars after trim. Example: `\"Member\"`.\n\n**Success `200`:** `{ session, user }`\n\n**`session` fields:**\n- `accessToken` (string) — Bearer token (JWT).\n- `refreshToken` (string) — Rotating refresh token.\n- `expiresIn` (number) — Access TTL in seconds. Example: `3600`.\n\n**`user` fields:**\n- `id` (uuid) — App user id. Example: `\"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\"`.\n- `email` (string) — Normalized email. Example: `\"member@example.com\"`.\n- `name` (string) — Display name. Example: `\"Member\"`.\n- `lane` (enum) — Immutable after provision. Values: `CLIENT`, `STAFF`.\n- `roleCode` (enum) — Effective role. Values: `CLIENT`, `STAFF_UNASSIGNED`, `TRAINER`, `ADMIN`.\n- `staffCode` (string or null) — Staff code; null for CLIENT. Example: `\"STAFF-AB12\"` or `null`.\n- `emailVerifiedAt` (string ISO or null) — Verified at. Example: `\"2026-08-02T00:00:00.000Z\"`.\n\nSTAFF first login: `roleCode` = `STAFF_UNASSIGNED`, `staffCode` non-null.\n\n**Errors:** `422` OTP_EXPIRED / VALIDATION_ERROR / EMAIL_NOT_VERIFIED / LANE_REQUIRED · `409` LANE_MISMATCH"
               },
               "response": [
                 {
@@ -800,7 +800,7 @@
                     "complete"
                   ]
                 },
-                "description": "POST /auth/google/complete — provision/complete after Google OAuth. Tokens are **not** rotated — keep access + refresh from the callback hash.\n\n**Auth:** Bearer (Google identity access token)\n\n**Request body (JSON):**\n- `lane` (required, enum) — Account lane for first provision; must match if already provisioned. Values: `CLIENT`, `STAFF`.\n- `name` (optional, string) — Display name, 1–120 chars. Example: `\"Member\"`.\n\n**Success `200`:** `{ user }` — same `user` shape as Verify OTP.\n\n**Errors:** `401` AUTHENTICATION_FAILED · `422` GOOGLE_IDENTITY_REQUIRED / EMAIL_NOT_VERIFIED / VALIDATION_ERROR · `409` LANE_MISMATCH"
+                "description": "**Story:** After Google sign-in, the app finishes account setup so the user can use the gym product.\n\nPOST /auth/google/complete — provision/complete after Google OAuth. Tokens are **not** rotated — keep access + refresh from the callback hash.\n\n**Auth:** Bearer (Google identity access token)\n\n**Request body (JSON):**\n- `lane` (required, enum) — Account lane for first provision; must match if already provisioned. Values: `CLIENT`, `STAFF`.\n- `name` (optional, string) — Display name, 1–120 chars. Example: `\"Member\"`.\n\n**Success `200`:** `{ user }` — same `user` shape as Verify OTP.\n\n**Errors:** `401` AUTHENTICATION_FAILED · `422` GOOGLE_IDENTITY_REQUIRED / EMAIL_NOT_VERIFIED / VALIDATION_ERROR · `409` LANE_MISMATCH"
               },
               "response": [
                 {
@@ -972,7 +972,7 @@
                     "start"
                   ]
                 },
-                "description": "GET /auth/google/start — public. **302** redirect to Supabase Google authorize (no JSON body).\n\nOpen in a browser / in-app browser. After consent, capture `access_token` **and** `refresh_token` from the callback URL hash, then call Complete Google Auth.\n\nCallback (`GET /auth/google/callback`) returns an HTML helper — not a JSON API."
+                "description": "**Story:** A user starts Google sign-in in the browser to authenticate without an email OTP.\n\nGET /auth/google/start — public. **302** redirect to Supabase Google authorize (no JSON body).\n\nOpen in a browser / in-app browser. After consent, capture `access_token` **and** `refresh_token` from the callback URL hash, then call Complete Google Auth.\n\nCallback (`GET /auth/google/callback`) returns an HTML helper — not a JSON API."
               },
               "response": [
                 {
@@ -1091,7 +1091,7 @@
                     "me"
                   ]
                 },
-                "description": "GET /auth/me — current provisioned user.\n\n**Auth:** Bearer (`{{accessToken}}`)  \n**Request body:** none\n\n**Success `200`:** `{ user }`\n\n**`user` fields:**\n- `id` (uuid) — App user id.\n- `email` (string) — Email. Example: `\"member@example.com\"`.\n- `name` (string) — Display name. Example: `\"Member\"`.\n- `lane` (enum) — Values: `CLIENT`, `STAFF`.\n- `roleCode` (enum) — Values: `CLIENT`, `STAFF_UNASSIGNED`, `TRAINER`, `ADMIN`.\n- `staffCode` (string or null) — Staff code; `null` for CLIENT.\n- `emailVerifiedAt` (string ISO or null) — Verified at.\n\n**Errors:** `401` AUTHENTICATION_FAILED"
+                "description": "**Story:** A signed-in user loads their account profile (lane, role, staff code) for the app shell.\n\nGET /auth/me — current provisioned user.\n\n**Auth:** Bearer (`{{accessToken}}`)  \n**Request body:** none\n\n**Success `200`:** `{ user }`\n\n**`user` fields:**\n- `id` (uuid) — App user id.\n- `email` (string) — Email. Example: `\"member@example.com\"`.\n- `name` (string) — Display name. Example: `\"Member\"`.\n- `lane` (enum) — Values: `CLIENT`, `STAFF`.\n- `roleCode` (enum) — Values: `CLIENT`, `STAFF_UNASSIGNED`, `TRAINER`, `ADMIN`.\n- `staffCode` (string or null) — Staff code; `null` for CLIENT.\n- `emailVerifiedAt` (string ISO or null) — Verified at.\n\n**Errors:** `401` AUTHENTICATION_FAILED"
               },
               "response": [
                 {
@@ -1261,7 +1261,7 @@
                     "refresh"
                   ]
                 },
-                "description": "POST /auth/refresh — public. Rotates refresh token; always persist the new value.\n\n**Auth:** none (refresh token in body)\n\n**Request body (JSON):**\n- `refreshToken` (required, string, min 1) — Current refresh token from last login/refresh.\n\n**Success `200`:**\n- `session.accessToken` (string) — New access token.\n- `session.refreshToken` (string) — **New** refresh token (old one invalid).\n- `session.expiresIn` (number) — Access TTL seconds. Example: `3600`.\n\n**Errors:** `401` AUTHENTICATION_FAILED · `422` VALIDATION_ERROR"
+                "description": "**Story:** The app quietly renews an expired access token so the user stays signed in.\n\nPOST /auth/refresh — public. Rotates refresh token; always persist the new value.\n\n**Auth:** none (refresh token in body)\n\n**Request body (JSON):**\n- `refreshToken` (required, string, min 1) — Current refresh token from last login/refresh.\n\n**Success `200`:**\n- `session.accessToken` (string) — New access token.\n- `session.refreshToken` (string) — **New** refresh token (old one invalid).\n- `session.expiresIn` (number) — Access TTL seconds. Example: `3600`.\n\n**Errors:** `401` AUTHENTICATION_FAILED · `422` VALIDATION_ERROR"
               },
               "response": [
                 {
@@ -1407,7 +1407,7 @@
                     "request"
                   ]
                 },
-                "description": "Negative case: invalid email → `422` EMAIL_ADDRESS_INVALID / VALIDATION_ERROR.\n\n**Request body:** `{ \"email\": \"not-an-email\" }`"
+                "description": "**Story:** Shows how the API rejects a bad email when requesting an OTP.\n\nNegative case: invalid email → `422` EMAIL_ADDRESS_INVALID / VALIDATION_ERROR.\n\n**Request body:** `{ \"email\": \"not-an-email\" }`"
               },
               "response": [
                 {
@@ -1527,7 +1527,7 @@
                     "me"
                   ]
                 },
-                "description": "Negative case: missing/invalid Bearer → `401` AUTHENTICATION_FAILED."
+                "description": "**Story:** Shows how the API rejects a call with no or invalid session token.\n\nNegative case: missing/invalid Bearer → `401` AUTHENTICATION_FAILED."
               },
               "response": [
                 {
@@ -1641,7 +1641,7 @@
                     "refresh"
                   ]
                 },
-                "description": "Negative case: invalid/rotated refresh → `401` AUTHENTICATION_FAILED.\n\n**Request body:** `{ \"refreshToken\": \"not-a-real-token\" }`"
+                "description": "**Story:** Shows how the API rejects a bad or already-used refresh token.\n\nNegative case: invalid/rotated refresh → `401` AUTHENTICATION_FAILED.\n\n**Request body:** `{ \"refreshToken\": \"not-a-real-token\" }`"
               },
               "response": [
                 {
@@ -1780,7 +1780,7 @@
                 "gym-orgs"
               ]
             },
-            "description": "POST /gym-orgs — create a gym. Actor must be `STAFF_UNASSIGNED` or `ADMIN`.\n\n**Auth:** Bearer STAFF (`{{accessToken}}`)\n\n**Request body (JSON):**\n- `name` (required, string) — Gym name, 1–255 after trim. Example: `\"North Star Fitness\"`.\n- `address` (optional, string or null) — Free-text address, max 2000; empty → null. Example: `\"12 Lift St\"` or `null`.\n- `contactPhone` (optional, string or null) — Desk phone, max 50. Example: `\"+15550001111\"` or `null`.\n- `contactEmail` (optional, string or null) — Valid email or null, max 255. Example: `\"hello@example.com\"` or `null`.\n- `logoUrl` (optional, string or null) — Absolute URL or null, max 2048. Example: `\"https://cdn.example/logo.png\"` or `null`.\n- `timezone` (optional, IANA string) — Defaults to `Asia/Kolkata` if omitted. Example: `\"Asia/Kolkata\"`.\n\n**Success `201`:** `{ gymOrg }` with `id`, `name`, `address`, `contactPhone`, `contactEmail`, `logoUrl`, `timezone`, `ownerUserId`, `createdAt`, `updatedAt` (no `isOwner` on create).\n\n**Errors:** `403` GYM_ORG_CREATION_FORBIDDEN · `422` VALIDATION_ERROR"
+            "description": "**Story:** A staff member creates the gym’s organisation profile to begin onboarding.\n\nPOST /gym-orgs — create a gym. Actor must be `STAFF_UNASSIGNED` or `ADMIN`.\n\n**Auth:** Bearer STAFF (`{{accessToken}}`)\n\n**Request body (JSON):**\n- `name` (required, string) — Gym name, 1–255 after trim. Example: `\"North Star Fitness\"`.\n- `address` (optional, string or null) — Free-text address, max 2000; empty → null. Example: `\"12 Lift St\"` or `null`.\n- `contactPhone` (optional, string or null) — Desk phone, max 50. Example: `\"+15550001111\"` or `null`.\n- `contactEmail` (optional, string or null) — Valid email or null, max 255. Example: `\"hello@example.com\"` or `null`.\n- `logoUrl` (optional, string or null) — Absolute URL or null, max 2048. Example: `\"https://cdn.example/logo.png\"` or `null`.\n- `timezone` (optional, IANA string) — Defaults to `Asia/Kolkata` if omitted. Example: `\"Asia/Kolkata\"`.\n\n**Success `201`:** `{ gymOrg }` with `id`, `name`, `address`, `contactPhone`, `contactEmail`, `logoUrl`, `timezone`, `ownerUserId`, `createdAt`, `updatedAt` (no `isOwner` on create).\n\n**Errors:** `403` GYM_ORG_CREATION_FORBIDDEN · `422` VALIDATION_ERROR"
           },
           "response": [
             {
@@ -1930,7 +1930,7 @@
                 "gym-orgs"
               ]
             },
-            "description": "GET /gym-orgs — list gyms where the actor is admin or trainer.\n\n**Auth:** Bearer affiliated staff  \n**Request body:** none\n\n**Success `200`:** `{ gymOrgs: [...] }` (may be `[]`)\n\n**`gymOrgs[]` item:**\n- `id` (uuid) — Gym org id.\n- `name` (string) — Gym name. Example: `\"North Star Fitness\"`.\n- `timezone` (IANA string) — Example: `\"Asia/Kolkata\"`.\n- `isOwner` (boolean) — Whether actor owns this gym."
+            "description": "**Story:** A staff member sees every gym they administer or train at.\n\nGET /gym-orgs — list gyms where the actor is admin or trainer.\n\n**Auth:** Bearer affiliated staff  \n**Request body:** none\n\n**Success `200`:** `{ gymOrgs: [...] }` (may be `[]`)\n\n**`gymOrgs[]` item:**\n- `id` (uuid) — Gym org id.\n- `name` (string) — Gym name. Example: `\"North Star Fitness\"`.\n- `timezone` (IANA string) — Example: `\"Asia/Kolkata\"`.\n- `isOwner` (boolean) — Whether actor owns this gym."
           },
           "response": [
             {
@@ -2055,7 +2055,7 @@
                 "{{gymOrgId}}"
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId — gym detail for affiliated staff.\n\n**Auth:** Bearer affiliated staff  \n**Path:** `gymOrgId` — set by Create Gym Org\n\n**Success `200`:** `{ gymOrg }` including `isOwner`.\n\n**`gymOrg` fields:**\n- `id` (uuid) — Gym org id.\n- `name` (string) — Gym name. Example: `\"North Star Fitness\"`.\n- `address` (string or null) — Address. Example: `\"12 Lift St\"`.\n- `contactPhone` (string or null) — Phone. Example: `\"+15550001111\"`.\n- `contactEmail` (string or null) — Email. Example: `\"hello@example.com\"`.\n- `logoUrl` (string or null) — Logo URL.\n- `timezone` (IANA string) — Example: `\"Asia/Kolkata\"`.\n- `ownerUserId` (uuid) — Owner.\n- `isOwner` (boolean) — Actor is owner.\n- `createdAt` / `updatedAt` (string, ISO) — Timestamps."
+            "description": "**Story:** A staff member opens one gym’s profile details.\n\nGET /gym-orgs/:gymOrgId — gym detail for affiliated staff.\n\n**Auth:** Bearer affiliated staff  \n**Path:** `gymOrgId` — set by Create Gym Org\n\n**Success `200`:** `{ gymOrg }` including `isOwner`.\n\n**`gymOrg` fields:**\n- `id` (uuid) — Gym org id.\n- `name` (string) — Gym name. Example: `\"North Star Fitness\"`.\n- `address` (string or null) — Address. Example: `\"12 Lift St\"`.\n- `contactPhone` (string or null) — Phone. Example: `\"+15550001111\"`.\n- `contactEmail` (string or null) — Email. Example: `\"hello@example.com\"`.\n- `logoUrl` (string or null) — Logo URL.\n- `timezone` (IANA string) — Example: `\"Asia/Kolkata\"`.\n- `ownerUserId` (uuid) — Owner.\n- `isOwner` (boolean) — Actor is owner.\n- `createdAt` / `updatedAt` (string, ISO) — Timestamps."
           },
           "response": [
             {
@@ -2196,7 +2196,7 @@
                 "{{gymOrgId}}"
               ]
             },
-            "description": "PATCH /gym-orgs/:gymOrgId — Admin at that gym only. Body same shape as Create.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`\n\n**Request body (JSON):**\n- `name` (required, string) — Gym name, 1–255. Example: `\"North Star Fitness\"`.\n- `address` (optional, string or null) — max 2000. Example: `\"12 Lift St\"` or `null`.\n- `contactPhone` (optional, string or null) — max 50.\n- `contactEmail` (optional, string or null) — email or null.\n- `logoUrl` (optional, string or null) — URL or null.\n- `timezone` (optional, IANA string) — defaults `Asia/Kolkata`.\n\n**Success `200`:** `{ gymOrg }`  \n**Errors:** `403` GYM_ORG_WRITE_FORBIDDEN · `404` NOT_FOUND · `422` VALIDATION_ERROR"
+            "description": "**Story:** A gym admin edits the gym’s name, address, contact details, or timezone.\n\nPATCH /gym-orgs/:gymOrgId — Admin at that gym only. Body same shape as Create.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`\n\n**Request body (JSON):**\n- `name` (required, string) — Gym name, 1–255. Example: `\"North Star Fitness\"`.\n- `address` (optional, string or null) — max 2000. Example: `\"12 Lift St\"` or `null`.\n- `contactPhone` (optional, string or null) — max 50.\n- `contactEmail` (optional, string or null) — email or null.\n- `logoUrl` (optional, string or null) — URL or null.\n- `timezone` (optional, IANA string) — defaults `Asia/Kolkata`.\n\n**Success `200`:** `{ gymOrg }`  \n**Errors:** `403` GYM_ORG_WRITE_FORBIDDEN · `404` NOT_FOUND · `422` VALIDATION_ERROR"
           },
           "response": [
             {
@@ -2382,7 +2382,7 @@
                 "staff-invites"
               ]
             },
-            "description": "POST /gym-orgs/:gymOrgId/staff-invites — invite STAFF by `staffCode` (in-app / QR, not email tokens). Max **3** admins including owner + pending ADMIN invites.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`\n\n**Request body (JSON):**\n- `staffCode` (required, string) — Invitee’s staff code, 1–64 after trim. Example: `\"STAFF-AB12\"` (env `inviteeStaffCode`).\n- `targetRole` (required, enum) — Role granted on accept. Values: `TRAINER`, `ADMIN`.\n- `expiresAt` (optional, string ISO) — Defaults to **+14 days**. Example: `\"2026-08-22T00:00:00.000Z\"`.\n\n**Success `201`:** `{ staffInvite }`\n\n**`staffInvite` fields:**\n- `id` (uuid) — Invite id (stored as `staffInviteId`).\n- `gymOrgId` (uuid) — Target gym.\n- `invitedUserId` (uuid) — Resolved invitee.\n- `targetRole` (enum) — Values: `TRAINER`, `ADMIN`.\n- `status` (enum) — Values: `PENDING`, `ACCEPTED`, `REVOKED`, `EXPIRED`.\n- `expiresAt` (string ISO or null) — Expiry.\n- `createdBy` (uuid) — Admin creator.\n- `acceptedAt` (string ISO or null) — Set on accept.\n- `createdAt` / `updatedAt` (string, ISO) — Timestamps.\n\n**Errors:** STAFF_INVITE_FORBIDDEN · INVALID_STAFF_INVITEE · STAFF_ALREADY_AFFILIATED · STAFF_INVITE_ADMIN_CAP · VALIDATION_ERROR"
+            "description": "**Story:** A gym admin invites another staff member (by staff code) to join as Admin or Trainer.\n\nPOST /gym-orgs/:gymOrgId/staff-invites — invite STAFF by `staffCode` (in-app / QR, not email tokens). Max **3** admins including owner + pending ADMIN invites.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`\n\n**Request body (JSON):**\n- `staffCode` (required, string) — Invitee’s staff code, 1–64 after trim. Example: `\"STAFF-AB12\"` (env `inviteeStaffCode`).\n- `targetRole` (required, enum) — Role granted on accept. Values: `TRAINER`, `ADMIN`.\n- `expiresAt` (optional, string ISO) — Defaults to **+14 days**. Example: `\"2026-08-22T00:00:00.000Z\"`.\n\n**Success `201`:** `{ staffInvite }`\n\n**`staffInvite` fields:**\n- `id` (uuid) — Invite id (stored as `staffInviteId`).\n- `gymOrgId` (uuid) — Target gym.\n- `invitedUserId` (uuid) — Resolved invitee.\n- `targetRole` (enum) — Values: `TRAINER`, `ADMIN`.\n- `status` (enum) — Values: `PENDING`, `ACCEPTED`, `REVOKED`, `EXPIRED`.\n- `expiresAt` (string ISO or null) — Expiry.\n- `createdBy` (uuid) — Admin creator.\n- `acceptedAt` (string ISO or null) — Set on accept.\n- `createdAt` / `updatedAt` (string, ISO) — Timestamps.\n\n**Errors:** STAFF_INVITE_FORBIDDEN · INVALID_STAFF_INVITEE · STAFF_ALREADY_AFFILIATED · STAFF_INVITE_ADMIN_CAP · VALIDATION_ERROR"
           },
           "response": [
             {
@@ -2616,7 +2616,7 @@
                 }
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/staff-invites — Admin list.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`\n\n**Query params:**\n- `limit` (optional, integer) — Page size 1–100, default 20. Example: `20`.\n- `offset` (optional, integer) — Skip, default 0. Example: `0`.\n\n**Success `200`:** `{ staffInvites: { items, total, limit, offset } }` — items are `staffInvite` objects.  \n`status` values: `PENDING`, `ACCEPTED`, `REVOKED`, `EXPIRED` (past expiry may read as EXPIRED)."
+            "description": "**Story:** A gym admin reviews pending and past staff invites for the gym.\n\nGET /gym-orgs/:gymOrgId/staff-invites — Admin list.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`\n\n**Query params:**\n- `limit` (optional, integer) — Page size 1–100, default 20. Example: `20`.\n- `offset` (optional, integer) — Skip, default 0. Example: `0`.\n\n**Success `200`:** `{ staffInvites: { items, total, limit, offset } }` — items are `staffInvite` objects.  \n`status` values: `PENDING`, `ACCEPTED`, `REVOKED`, `EXPIRED` (past expiry may read as EXPIRED)."
           },
           "response": [
             {
@@ -2737,7 +2737,7 @@
                 }
               ]
             },
-            "description": "GET /gym-orgs/staff-invites/inbox — invitee inbox. Soft-deleted gyms omitted. Past `expiresAt` show as `EXPIRED` without a write.\n\n**Auth:** Bearer STAFF invitee\n\n**Query params:**\n- `limit` (optional, integer) — Page size 1–100, default 20.\n- `offset` (optional, integer) — Skip, default 0.\n\n**Success `200`:** `{ staffInvites: { items, total, limit, offset } }`  \nEach item = `staffInvite` + nested `gym`:\n- `gym.id` (uuid)\n- `gym.name` (string) — Example: `\"Iron Temple\"`.\n- `gym.address` (string or null)\n- `gym.contactPhone` (string or null)\n- `gym.contactEmail` (string or null)\n- `gym.logoUrl` (string or null)\n- `gym.timezone` (IANA string) — Example: `\"Asia/Kolkata\"`."
+            "description": "**Story:** A staff member sees gym invites waiting for them to accept.\n\nGET /gym-orgs/staff-invites/inbox — invitee inbox. Soft-deleted gyms omitted. Past `expiresAt` show as `EXPIRED` without a write.\n\n**Auth:** Bearer STAFF invitee\n\n**Query params:**\n- `limit` (optional, integer) — Page size 1–100, default 20.\n- `offset` (optional, integer) — Skip, default 0.\n\n**Success `200`:** `{ staffInvites: { items, total, limit, offset } }`  \nEach item = `staffInvite` + nested `gym`:\n- `gym.id` (uuid)\n- `gym.name` (string) — Example: `\"Iron Temple\"`.\n- `gym.address` (string or null)\n- `gym.contactPhone` (string or null)\n- `gym.contactEmail` (string or null)\n- `gym.logoUrl` (string or null)\n- `gym.timezone` (IANA string) — Example: `\"Asia/Kolkata\"`."
           },
           "response": [
             {
@@ -2843,7 +2843,7 @@
                 "revoke"
               ]
             },
-            "description": "POST /gym-orgs/staff-invites/:inviteId/revoke — Admin. Body: none. Only `PENDING` → `REVOKED`.\n\n**Auth:** Bearer ADMIN  \n**Path:** `inviteId` (`{{staffInviteId}}`)\n\n**Success `200`:** `{ staffInvite }` with `status: \"REVOKED\"`  \n**Errors:** STAFF_INVITE_FORBIDDEN · NOT_FOUND · STAFF_INVITE_INVALID_TRANSITION"
+            "description": "**Story:** A gym admin cancels a pending staff invite before it is accepted.\n\nPOST /gym-orgs/staff-invites/:inviteId/revoke — Admin. Body: none. Only `PENDING` → `REVOKED`.\n\n**Auth:** Bearer ADMIN  \n**Path:** `inviteId` (`{{staffInviteId}}`)\n\n**Success `200`:** `{ staffInvite }` with `status: \"REVOKED\"`  \n**Errors:** STAFF_INVITE_FORBIDDEN · NOT_FOUND · STAFF_INVITE_INVALID_TRANSITION"
           },
           "response": [
             {
@@ -2981,7 +2981,7 @@
                 "accept"
               ]
             },
-            "description": "POST /gym-orgs/staff-invites/:inviteId/accept — invitee. Body: none.  \nCreates affiliations + role upgrade (`TRAINER` or desk `ADMIN`; Admin-as-Trainer also gets a trainer profile).\n\n**Auth:** Bearer invitee STAFF  \n**Path:** `inviteId` (`{{staffInviteId}}`)\n\n**Success `200`:** `{ staffInvite }` with `status: \"ACCEPTED\"`, `acceptedAt` set  \n**Errors:** STAFF_INVITE_FORBIDDEN · STAFF_INVITE_EXPIRED · STAFF_ALREADY_AFFILIATED · NOT_FOUND · STAFF_INVITE_INVALID_TRANSITION"
+            "description": "**Story:** An invited staff member accepts and joins the gym in the offered role.\n\nPOST /gym-orgs/staff-invites/:inviteId/accept — invitee. Body: none.  \nCreates affiliations + role upgrade (`TRAINER` or desk `ADMIN`; Admin-as-Trainer also gets a trainer profile).\n\n**Auth:** Bearer invitee STAFF  \n**Path:** `inviteId` (`{{staffInviteId}}`)\n\n**Success `200`:** `{ staffInvite }` with `status: \"ACCEPTED\"`, `acceptedAt` set  \n**Errors:** STAFF_INVITE_FORBIDDEN · STAFF_INVITE_EXPIRED · STAFF_ALREADY_AFFILIATED · NOT_FOUND · STAFF_INVITE_INVALID_TRANSITION"
           },
           "response": [
             {
@@ -3102,7 +3102,7 @@
                 "leads"
               ]
             },
-            "description": "POST /gym-orgs/:gymOrgId/leads — capture a lead. Status is always `NEW` on create (`followUpDate` starts null). Soft warn when another **open** lead shares the same phone — still `201`.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`\n\n**Request body (JSON):**\n- `name` (required, string) — Prospect name, 1–255 after trim. Example: `\"Priya Walk-in\"`.\n- `phone` (required, string) — Contact phone, 1–32 after trim. Example: `\"9876543210\"`.\n- `source` (optional, string or null) — Acquisition source, max 255. Example: `\"Instagram\"` or `null`.\n- `interest` (optional, string or null) — Free-text what they want (trial, PT, etc.), max 2000. Example: `\"Personal training trial\"` or `null`.\n- `notes` (optional, string or null) — Staff notes, max 5000. Example: `\"Asked about evening slots\"` or `null`.\n\n**Success `201`:** `{ lead, warnings }`\n\n**`lead` fields:**\n- `id` (uuid) — Lead id (stored as `leadId`).\n- `gymOrgId` (uuid) — Owning gym.\n- `name` / `phone` (string) — Prospect.\n- `source` (string or null) — Example: `\"Instagram\"`.\n- `status` (enum) — Always `NEW` on create. Values: `NEW`, `CONTACTED`, `TRIAL`, `CONVERTED`, `LOST`.\n- `interest` (string or null) — Free-text intent. Example: `\"Personal training trial\"`.\n- `notes` (string or null)\n- `followUpDate` (string or null) — `YYYY-MM-DD` or null (`null` on create).\n- `createdBy` (uuid) — Admin.\n- `createdAt` / `updatedAt` (string, ISO)\n\n**`warnings[]` (soft):**\n- `code` (enum) — Value: `DUPLICATE_OPEN_LEAD_PHONE`.\n- `existingLeadIds` (uuid[]) — Other open leads with same phone.\n\n**Errors:** `401` · `403` LEAD_FORBIDDEN · `422` VALIDATION_ERROR\n\nGuide: gym-backend `docs/leads.md`.",
+            "description": "**Story:** A gym admin records a walk-in inquiry so the team can follow up and convert them.\n\nPOST /gym-orgs/:gymOrgId/leads — capture a lead. Status is always `NEW` on create (`followUpDate` starts null). Soft warn when another **open** lead shares the same phone — still `201`.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`\n\n**Request body (JSON):**\n- `name` (required, string) — Prospect name, 1–255 after trim. Example: `\"Priya Walk-in\"`.\n- `phone` (required, string) — Contact phone, 1–32 after trim. Example: `\"9876543210\"`.\n- `source` (optional, string or null) — Acquisition source, max 255. Example: `\"Instagram\"` or `null`.\n- `interest` (optional, string or null) — Free-text what they want (trial, PT, etc.), max 2000. Example: `\"Personal training trial\"` or `null`.\n- `notes` (optional, string or null) — Staff notes, max 5000. Example: `\"Asked about evening slots\"` or `null`.\n\n**Success `201`:** `{ lead, warnings }`\n\n**`lead` fields:**\n- `id` (uuid) — Lead id (stored as `leadId`).\n- `gymOrgId` (uuid) — Owning gym.\n- `name` / `phone` (string) — Prospect.\n- `source` (string or null) — Example: `\"Instagram\"`.\n- `status` (enum) — Always `NEW` on create. Values: `NEW`, `CONTACTED`, `TRIAL`, `CONVERTED`, `LOST`.\n- `interest` (string or null) — Free-text intent. Example: `\"Personal training trial\"`.\n- `notes` (string or null)\n- `followUpDate` (string or null) — `YYYY-MM-DD` or null (`null` on create).\n- `createdBy` (uuid) — Admin.\n- `createdAt` / `updatedAt` (string, ISO)\n\n**`warnings[]` (soft):**\n- `code` (enum) — Value: `DUPLICATE_OPEN_LEAD_PHONE`.\n- `existingLeadIds` (uuid[]) — Other open leads with same phone.\n\n**Errors:** `401` · `403` LEAD_FORBIDDEN · `422` VALIDATION_ERROR\n\nGuide: gym-backend `docs/leads.md`.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Walk-in Prospect\",\n  \"phone\": \"9876543210\",\n  \"source\": \"walk-in\",\n  \"interest\": \"trial\",\n  \"notes\": null\n}",
@@ -3326,7 +3326,7 @@
                 }
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/leads — Admin list (excludes soft-deleted).\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`\n\n**Query params:**\n- `limit` (optional, integer) — Page size 1–100, default 20. Example: `20`.\n- `offset` (optional, integer) — Skip, default 0. Example: `0`.\n- `status` (optional, enum) — Filter by pipeline status. Values: `NEW`, `CONTACTED`, `TRIAL`, `CONVERTED`, `LOST`.\n\n**Success `200`:** `{ leads: { items, total, limit, offset } }` — items are full `lead` objects."
+            "description": "**Story:** A gym admin browses the gym’s open and past leads in the Mini-CRM.\n\nGET /gym-orgs/:gymOrgId/leads — Admin list (excludes soft-deleted).\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`\n\n**Query params:**\n- `limit` (optional, integer) — Page size 1–100, default 20. Example: `20`.\n- `offset` (optional, integer) — Skip, default 0. Example: `0`.\n- `status` (optional, enum) — Filter by pipeline status. Values: `NEW`, `CONTACTED`, `TRIAL`, `CONVERTED`, `LOST`.\n\n**Success `200`:** `{ leads: { items, total, limit, offset } }` — items are full `lead` objects."
           },
           "response": [
             {
@@ -3396,7 +3396,7 @@
                 "{{leadId}}"
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/leads/:leadId — Admin get one.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`, `leadId` (`{{leadId}}`)\n\n**Success `200`:** `{ lead }` — see Create Lead for field list.  \n**Errors:** `404` NOT_FOUND"
+            "description": "**Story:** A gym admin opens one lead’s details for follow-up.\n\nGET /gym-orgs/:gymOrgId/leads/:leadId — Admin get one.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`, `leadId` (`{{leadId}}`)\n\n**Success `200`:** `{ lead }` — see Create Lead for field list.  \n**Errors:** `404` NOT_FOUND"
           },
           "response": [
             {
@@ -3507,7 +3507,7 @@
                 "{{leadId}}"
               ]
             },
-            "description": "PATCH /gym-orgs/:gymOrgId/leads/:leadId — update profile + optional follow-up date.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`, `leadId`\n\n**Request body (JSON):**\n- `name` (required, string) — Prospect name, 1–255. Example: `\"Priya Walk-in\"`.\n- `phone` (required, string) — Contact phone, 1–32. Example: `\"9876543210\"`.\n- `source` (optional, string or null) — max 255. Example: `\"Walk-in\"` or `null`.\n- `interest` (optional, string or null) — Free-text intent, max 2000. Example: `\"Personal training trial\"`.\n- `notes` (optional, string or null) — max 5000. Example: `\"Prefers 7pm\"`.\n- `followUpDate` (optional, string or null) — `YYYY-MM-DD`, or `null` to clear. **Omit key** to keep existing. Example: `\"2026-08-15\"`.\n\n**Success `200`:** `{ lead, warnings }` (same soft dup-phone warn as create)  \n**Errors:** `404` · `422` VALIDATION_ERROR",
+            "description": "**Story:** A gym admin updates a lead’s contact info, notes, interest, or next follow-up date.\n\nPATCH /gym-orgs/:gymOrgId/leads/:leadId — update profile + optional follow-up date.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`, `leadId`\n\n**Request body (JSON):**\n- `name` (required, string) — Prospect name, 1–255. Example: `\"Priya Walk-in\"`.\n- `phone` (required, string) — Contact phone, 1–32. Example: `\"9876543210\"`.\n- `source` (optional, string or null) — max 255. Example: `\"Walk-in\"` or `null`.\n- `interest` (optional, string or null) — Free-text intent, max 2000. Example: `\"Personal training trial\"`.\n- `notes` (optional, string or null) — max 5000. Example: `\"Prefers 7pm\"`.\n- `followUpDate` (optional, string or null) — `YYYY-MM-DD`, or `null` to clear. **Omit key** to keep existing. Example: `\"2026-08-15\"`.\n\n**Success `200`:** `{ lead, warnings }` (same soft dup-phone warn as create)  \n**Errors:** `404` · `422` VALIDATION_ERROR",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Walk-in Prospect\",\n  \"phone\": \"9876543210\",\n  \"source\": \"walk-in\",\n  \"interest\": \"trial\",\n  \"notes\": \"follow up\",\n  \"followUpDate\": \"2026-08-10\"\n}",
@@ -3645,7 +3645,7 @@
                 "status"
               ]
             },
-            "description": "PATCH /gym-orgs/:gymOrgId/leads/:leadId/status — move pipeline stage.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`, `leadId`\n\n**Request body (JSON):**\n- `status` (required, enum) — New pipeline status. Values: `NEW`, `CONTACTED`, `TRIAL`, `CONVERTED`, `LOST`. Example: `\"CONTACTED\"`.\n\n**Success `200`:** `{ lead }` with updated `status`  \n**Errors:** `404` · `422` VALIDATION_ERROR\n\nNote: convert → membership invite (A14) is **not** shipped yet.",
+            "description": "**Story:** A gym admin moves a lead through the sales pipeline (new → contacted → trial → converted/lost).\n\nPATCH /gym-orgs/:gymOrgId/leads/:leadId/status — move pipeline stage.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`, `leadId`\n\n**Request body (JSON):**\n- `status` (required, enum) — New pipeline status. Values: `NEW`, `CONTACTED`, `TRIAL`, `CONVERTED`, `LOST`. Example: `\"CONTACTED\"`.\n\n**Success `200`:** `{ lead }` with updated `status`  \n**Errors:** `404` · `422` VALIDATION_ERROR\n\nNote: convert → membership invite (A14) is **not** shipped yet.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"status\": \"CONTACTED\"\n}",
@@ -3802,7 +3802,7 @@
                 }
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/leads/due-follow-ups — open leads with `followUpDate` on or before a day.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`\n\n**Query params:**\n- `limit` (optional, integer) — Page size 1–100, default 20.\n- `offset` (optional, integer) — Skip, default 0.\n- `onOrBefore` (optional, string `YYYY-MM-DD`) — Inclusive due date; defaults to **today UTC**. Example: `\"2026-08-15\"`.\n\n**Success `200`:** `{ leads: { items, total, limit, offset } }`  \nOpen statuses: `NEW`, `CONTACTED`, `TRIAL`."
+            "description": "**Story:** A gym admin sees which leads need a call or visit on or before a given day.\n\nGET /gym-orgs/:gymOrgId/leads/due-follow-ups — open leads with `followUpDate` on or before a day.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`\n\n**Query params:**\n- `limit` (optional, integer) — Page size 1–100, default 20.\n- `offset` (optional, integer) — Skip, default 0.\n- `onOrBefore` (optional, string `YYYY-MM-DD`) — Inclusive due date; defaults to **today UTC**. Example: `\"2026-08-15\"`.\n\n**Success `200`:** `{ leads: { items, total, limit, offset } }`  \nOpen statuses: `NEW`, `CONTACTED`, `TRIAL`."
           },
           "response": [
             {
@@ -3873,7 +3873,7 @@
                 "{{leadId}}"
               ]
             },
-            "description": "DELETE /gym-orgs/:gymOrgId/leads/:leadId — soft-delete (`deleted_at`). Body: none.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`, `leadId`\n\n**Success `204`:** empty body  \n**Errors:** `403` · `404` NOT_FOUND"
+            "description": "**Story:** A gym admin removes a lead from the active CRM list without hard-deleting history.\n\nDELETE /gym-orgs/:gymOrgId/leads/:leadId — soft-delete (`deleted_at`). Body: none.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`, `leadId`\n\n**Success `204`:** empty body  \n**Errors:** `403` · `404` NOT_FOUND"
           },
           "response": [
             {
@@ -3944,7 +3944,7 @@
                 "plans"
               ]
             },
-            "description": "POST /gym-orgs/:gymOrgId/plans — create a **BASE** plan (prereq for membership invites).\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`\n\n**Request body (JSON):**\n- `name` (required, string) — Plan name, 1–255. Example: `\"Monthly Base\"`.\n- `kind` (required, enum) — Must be `BASE`.\n- `capability` (null for BASE) — BASE must have capability `null` / omitted.\n- `durationDays` (required, integer) — Days, 1–3650. Example: `30`.\n- `price` (required, number) — ≥ 0, ≤ 2 decimal places. Example: `999`.\n\n**Success `201`:** `{ plan }` — stores `planId`\n\n**`plan` fields:**\n- `id` (uuid) — Plan id.\n- `gymOrgId` (uuid) — Owning gym.\n- `name` (string) — Example: `\"Monthly Base\"`.\n- `kind` (enum) — Values: `BASE`, `ADDON`.\n- `capability` (enum or null) — `TRAINER_COACHING` for ADDON; `null` for BASE.\n- `durationDays` (integer) — 1–3650.\n- `price` (number)\n- `active` (boolean) — Soft-active.\n- `createdAt` / `updatedAt` (string, ISO)\n\n**Errors:** `403` PLAN_FORBIDDEN · `422` VALIDATION_ERROR  \nGuide: gym-backend `docs/plans.md`.",
+            "description": "**Story:** A gym admin defines a base membership plan (price and duration) clients can be invited onto.\n\nPOST /gym-orgs/:gymOrgId/plans — create a **BASE** plan (prereq for membership invites).\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`\n\n**Request body (JSON):**\n- `name` (required, string) — Plan name, 1–255. Example: `\"Monthly Base\"`.\n- `kind` (required, enum) — Must be `BASE`.\n- `capability` (null for BASE) — BASE must have capability `null` / omitted.\n- `durationDays` (required, integer) — Days, 1–3650. Example: `30`.\n- `price` (required, number) — ≥ 0, ≤ 2 decimal places. Example: `999`.\n\n**Success `201`:** `{ plan }` — stores `planId`\n\n**`plan` fields:**\n- `id` (uuid) — Plan id.\n- `gymOrgId` (uuid) — Owning gym.\n- `name` (string) — Example: `\"Monthly Base\"`.\n- `kind` (enum) — Values: `BASE`, `ADDON`.\n- `capability` (enum or null) — `TRAINER_COACHING` for ADDON; `null` for BASE.\n- `durationDays` (integer) — 1–3650.\n- `price` (number)\n- `active` (boolean) — Soft-active.\n- `createdAt` / `updatedAt` (string, ISO)\n\n**Errors:** `403` PLAN_FORBIDDEN · `422` VALIDATION_ERROR  \nGuide: gym-backend `docs/plans.md`.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Monthly\",\n  \"kind\": \"BASE\",\n  \"durationDays\": 30,\n  \"price\": 999\n}",
@@ -4103,7 +4103,7 @@
                 "plans"
               ]
             },
-            "description": "POST /gym-orgs/:gymOrgId/plans — create an **ADDON** plan (`TRAINER_COACHING`).\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`\n\n**Request body (JSON):**\n- `name` (required, string) — Plan name, 1–255. Example: `\"PT Coaching\"`.\n- `kind` (required, enum) — Must be `ADDON`.\n- `capability` (required, enum) — Required for ADDON. Value: `TRAINER_COACHING`.\n- `durationDays` (required, integer) — Days, 1–3650. Example: `30`.\n- `price` (required, number) — ≥ 0, ≤ 2 decimals. Example: `1500`.\n\n**Success `201`:** `{ plan }` (same shape as BASE; `kind=ADDON`, `capability=TRAINER_COACHING`)  \n**Errors:** `403` PLAN_FORBIDDEN · `422` VALIDATION_ERROR (e.g. missing capability)",
+            "description": "**Story:** A gym admin defines a coaching add-on plan that can be attached with a base membership.\n\nPOST /gym-orgs/:gymOrgId/plans — create an **ADDON** plan (`TRAINER_COACHING`).\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`\n\n**Request body (JSON):**\n- `name` (required, string) — Plan name, 1–255. Example: `\"PT Coaching\"`.\n- `kind` (required, enum) — Must be `ADDON`.\n- `capability` (required, enum) — Required for ADDON. Value: `TRAINER_COACHING`.\n- `durationDays` (required, integer) — Days, 1–3650. Example: `30`.\n- `price` (required, number) — ≥ 0, ≤ 2 decimals. Example: `1500`.\n\n**Success `201`:** `{ plan }` (same shape as BASE; `kind=ADDON`, `capability=TRAINER_COACHING`)  \n**Errors:** `403` PLAN_FORBIDDEN · `422` VALIDATION_ERROR (e.g. missing capability)",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"PT Coaching\",\n  \"kind\": \"ADDON\",\n  \"capability\": \"TRAINER_COACHING\",\n  \"durationDays\": 30,\n  \"price\": 1500\n}",
@@ -4261,7 +4261,7 @@
                 }
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/plans — Admin catalog list.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`\n\n**Query params:**\n- `limit` (optional, integer) — Page size 1–100, default 20.\n- `offset` (optional, integer) — Skip, default 0.\n- `kind` (optional, enum) — Filter. Values: `BASE`, `ADDON`.\n- `active` (optional, string enum) — Query-string boolean. Values: `\"true\"`, `\"false\"`.\n\n**Success `200`:** `{ plans: { items, total, limit, offset } }`"
+            "description": "**Story:** A gym admin browses the gym’s membership and add-on plan catalog.\n\nGET /gym-orgs/:gymOrgId/plans — Admin catalog list.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`\n\n**Query params:**\n- `limit` (optional, integer) — Page size 1–100, default 20.\n- `offset` (optional, integer) — Skip, default 0.\n- `kind` (optional, enum) — Filter. Values: `BASE`, `ADDON`.\n- `active` (optional, string enum) — Query-string boolean. Values: `\"true\"`, `\"false\"`.\n\n**Success `200`:** `{ plans: { items, total, limit, offset } }`"
           },
           "response": [
             {
@@ -4331,7 +4331,7 @@
                 "{{planId}}"
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/plans/:planId — Admin get one.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`, `planId` (`{{planId}}`)\n\n**Success `200`:** `{ plan }`  \n**Errors:** `404` NOT_FOUND"
+            "description": "**Story:** A gym admin opens one plan’s details from the catalog.\n\nGET /gym-orgs/:gymOrgId/plans/:planId — Admin get one.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`, `planId` (`{{planId}}`)\n\n**Success `200`:** `{ plan }`  \n**Errors:** `404` NOT_FOUND"
           },
           "response": [
             {
@@ -4442,7 +4442,7 @@
                 "{{planId}}"
               ]
             },
-            "description": "PATCH /gym-orgs/:gymOrgId/plans/:planId — update mutable fields. `kind` / `capability` are **not** updatable.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`, `planId`\n\n**Request body (JSON):**\n- `name` (required, string) — Plan name, 1–255. Example: `\"Quarterly Base\"`.\n- `durationDays` (required, integer) — Days, 1–3650. Example: `90`.\n- `price` (required, number) — ≥ 0, ≤ 2 decimals. Example: `2499.5`.\n- `active` (required, boolean) — Soft-active flag. Values: `true`, `false`.\n\n**Success `200`:** `{ plan }`  \n**Errors:** `403` · `404` · `422` VALIDATION_ERROR",
+            "description": "**Story:** A gym admin edits a plan’s name, price, or duration (kind stays fixed).\n\nPATCH /gym-orgs/:gymOrgId/plans/:planId — update mutable fields. `kind` / `capability` are **not** updatable.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`, `planId`\n\n**Request body (JSON):**\n- `name` (required, string) — Plan name, 1–255. Example: `\"Quarterly Base\"`.\n- `durationDays` (required, integer) — Days, 1–3650. Example: `90`.\n- `price` (required, number) — ≥ 0, ≤ 2 decimals. Example: `2499.5`.\n- `active` (required, boolean) — Soft-active flag. Values: `true`, `false`.\n\n**Success `200`:** `{ plan }`  \n**Errors:** `403` · `404` · `422` VALIDATION_ERROR",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Monthly Plus\",\n  \"durationDays\": 45,\n  \"price\": 1200,\n  \"active\": true\n}",
@@ -4579,7 +4579,7 @@
                 "{{planId}}"
               ]
             },
-            "description": "DELETE /gym-orgs/:gymOrgId/plans/:planId — soft-delete plan. Body: none.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`, `planId`\n\n**Success `204`:** empty body  \n**Errors:** `403` · `404` NOT_FOUND"
+            "description": "**Story:** A gym admin retires a plan so it is no longer offered for new invites.\n\nDELETE /gym-orgs/:gymOrgId/plans/:planId — soft-delete plan. Body: none.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`, `planId`\n\n**Success `204`:** empty body  \n**Errors:** `403` · `404` NOT_FOUND"
           },
           "response": [
             {
@@ -4650,7 +4650,7 @@
                 "membership-invites"
               ]
             },
-            "description": "POST /gym-orgs/:gymOrgId/membership-invites — create a PENDING client membership invite.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`  \n**Prereq:** active BASE plan in `planId` (Create BASE Plan)\n\n**Request body (JSON):**\n- `inviteeName` (required, string) — Display name, 1–255. Example: `\"Alex Client\"`.\n- `invitedEmail` (required, string) — CLIENT match key (normalized lowercase). Example: `\"alex.client@example.com\"`.\n- `inviteePhone` (optional, string) — Contact phone, 1–32. Example: `\"+15551234567\"`.\n- `basePlanId` (required, uuid) — Active **BASE** plan. Example: `{{planId}}`.\n- `basePaymentStatus` (required, enum) — Base line payment. Values: `paid`, `unpaid`, `partial`.\n- `addonPlanId` (optional*, uuid) — Active `TRAINER_COACHING` **ADDON**; must pair with addon payment.\n- `addonPaymentStatus` (optional*, enum) — Addon payment; must pair with addon plan. Values: `paid`, `unpaid`, `partial`.\n- `expiresAt` (optional, string ISO) — Defaults **+14 days**. Example: `\"2026-08-22T00:00:00.000Z\"`.\n\n* Addon fields must be **both set or both omitted**. Cannot invite a STAFF email (`INVALID_MEMBERSHIP_INVITEE`).\n\n**Success `201`:** `{ membershipInvite }`\n\n**`membershipInvite` fields:**\n- `id` (uuid) — Invite id → `membershipInviteId`.\n- `gymOrgId` (uuid) — Issuing gym.\n- `invitedEmail` (string) — Match email.\n- `invitedUserId` (uuid or null) — Resolved CLIENT if provisioned.\n- `inviteeName` / `inviteePhone` — Invitee.\n- `basePlanId` (uuid) — BASE plan.\n- `basePaymentStatus` (enum) — Values: `paid`, `unpaid`, `partial`.\n- `addonPlanId` / `addonPaymentStatus` (uuid/null, enum/null) — Optional addon.\n- `status` (enum) — Values: `PENDING`, `ACCEPTED`, `REVOKED`, `EXPIRED`.\n- `expiresAt` (string ISO or null)\n- `createdBy` (uuid) — Admin.\n- `acceptedAt` / `acceptedMembershipId` — null until accept.\n- `createdAt` / `updatedAt` (string, ISO)\n\n**Errors:** `403` PLAN_FORBIDDEN · `409` CONFLICT · `422` INVALID_INVITE_PLAN / INVALID_MEMBERSHIP_INVITEE / VALIDATION_ERROR\n\nGuide: gym-backend `docs/membership-invites.md`.",
+            "description": "**Story:** A gym admin invites a client to join a plan so they can activate a membership.\n\nPOST /gym-orgs/:gymOrgId/membership-invites — create a PENDING client membership invite.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`  \n**Prereq:** active BASE plan in `planId` (Create BASE Plan)\n\n**Request body (JSON):**\n- `inviteeName` (required, string) — Display name, 1–255. Example: `\"Alex Client\"`.\n- `invitedEmail` (required, string) — CLIENT match key (normalized lowercase). Example: `\"alex.client@example.com\"`.\n- `inviteePhone` (optional, string) — Contact phone, 1–32. Example: `\"+15551234567\"`.\n- `basePlanId` (required, uuid) — Active **BASE** plan. Example: `{{planId}}`.\n- `basePaymentStatus` (required, enum) — Base line payment. Values: `paid`, `unpaid`, `partial`.\n- `addonPlanId` (optional*, uuid) — Active `TRAINER_COACHING` **ADDON**; must pair with addon payment.\n- `addonPaymentStatus` (optional*, enum) — Addon payment; must pair with addon plan. Values: `paid`, `unpaid`, `partial`.\n- `expiresAt` (optional, string ISO) — Defaults **+14 days**. Example: `\"2026-08-22T00:00:00.000Z\"`.\n\n* Addon fields must be **both set or both omitted**. Cannot invite a STAFF email (`INVALID_MEMBERSHIP_INVITEE`).\n\n**Success `201`:** `{ membershipInvite }`\n\n**`membershipInvite` fields:**\n- `id` (uuid) — Invite id → `membershipInviteId`.\n- `gymOrgId` (uuid) — Issuing gym.\n- `invitedEmail` (string) — Match email.\n- `invitedUserId` (uuid or null) — Resolved CLIENT if provisioned.\n- `inviteeName` / `inviteePhone` — Invitee.\n- `basePlanId` (uuid) — BASE plan.\n- `basePaymentStatus` (enum) — Values: `paid`, `unpaid`, `partial`.\n- `addonPlanId` / `addonPaymentStatus` (uuid/null, enum/null) — Optional addon.\n- `status` (enum) — Values: `PENDING`, `ACCEPTED`, `REVOKED`, `EXPIRED`.\n- `expiresAt` (string ISO or null)\n- `createdBy` (uuid) — Admin.\n- `acceptedAt` / `acceptedMembershipId` — null until accept.\n- `createdAt` / `updatedAt` (string, ISO)\n\n**Errors:** `403` PLAN_FORBIDDEN · `409` CONFLICT · `422` INVALID_INVITE_PLAN / INVALID_MEMBERSHIP_INVITEE / VALIDATION_ERROR\n\nGuide: gym-backend `docs/membership-invites.md`.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"inviteeName\": \"Alex Client\",\n  \"invitedEmail\": \"alex.client@example.com\",\n  \"inviteePhone\": \"+15551234567\",\n  \"basePlanId\": \"{{planId}}\",\n  \"basePaymentStatus\": \"unpaid\"\n}",
@@ -4868,7 +4868,7 @@
                 }
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/membership-invites — Admin list.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`\n\n**Query params:**\n- `limit` (optional, integer) — Page size 1–100, default 20.\n- `offset` (optional, integer) — Skip, default 0.\n\n**Success `200`:** `{ membershipInvites: { items, total, limit, offset } }`  \n`status` values: `PENDING`, `ACCEPTED`, `REVOKED`, `EXPIRED`."
+            "description": "**Story:** A gym admin reviews membership invites sent for the gym.\n\nGET /gym-orgs/:gymOrgId/membership-invites — Admin list.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`\n\n**Query params:**\n- `limit` (optional, integer) — Page size 1–100, default 20.\n- `offset` (optional, integer) — Skip, default 0.\n\n**Success `200`:** `{ membershipInvites: { items, total, limit, offset } }`  \n`status` values: `PENDING`, `ACCEPTED`, `REVOKED`, `EXPIRED`."
           },
           "response": [
             {
@@ -4990,7 +4990,7 @@
                 "revoke"
               ]
             },
-            "description": "POST /gym-orgs/:gymOrgId/membership-invites/:inviteId/revoke — Admin. Body: none. Only `PENDING` → `REVOKED`.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`, `inviteId` (`{{membershipInviteId}}`)\n\n**Success `200`:** `{ membershipInvite }` with `status: \"REVOKED\"`  \n**Errors:** `403` PLAN_FORBIDDEN · `404` NOT_FOUND · `409` MEMBERSHIP_INVITE_INVALID_TRANSITION"
+            "description": "**Story:** A gym admin cancels a pending membership invite before the client accepts.\n\nPOST /gym-orgs/:gymOrgId/membership-invites/:inviteId/revoke — Admin. Body: none. Only `PENDING` → `REVOKED`.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`, `inviteId` (`{{membershipInviteId}}`)\n\n**Success `200`:** `{ membershipInvite }` with `status: \"REVOKED\"`  \n**Errors:** `403` PLAN_FORBIDDEN · `404` NOT_FOUND · `409` MEMBERSHIP_INVITE_INVALID_TRANSITION"
           },
           "response": [
             {
@@ -5101,7 +5101,7 @@
                 }
               ]
             },
-            "description": "GET /membership-invites/inbox — CLIENT inbox (match by user id or pending email). Embeds gym profile.\n\n**Auth:** Bearer CLIENT\n\n**Query params:**\n- `limit` (optional, integer) — Page size 1–100, default 20.\n- `offset` (optional, integer) — Skip, default 0.\n\n**Success `200`:** `{ membershipInvites: { items, total, limit, offset } }`  \nEach item = `membershipInvite` + nested `gym` (`id`, `name`, `address`, `contactPhone`, `contactEmail`, `logoUrl`, `timezone`).\n\n**Errors:** `403` MEMBERSHIP_INVITE_FORBIDDEN (non-CLIENT)"
+            "description": "**Story:** A client sees gym membership invites waiting for them to accept.\n\nGET /membership-invites/inbox — CLIENT inbox (match by user id or pending email). Embeds gym profile.\n\n**Auth:** Bearer CLIENT\n\n**Query params:**\n- `limit` (optional, integer) — Page size 1–100, default 20.\n- `offset` (optional, integer) — Skip, default 0.\n\n**Success `200`:** `{ membershipInvites: { items, total, limit, offset } }`  \nEach item = `membershipInvite` + nested `gym` (`id`, `name`, `address`, `contactPhone`, `contactEmail`, `logoUrl`, `timezone`).\n\n**Errors:** `403` MEMBERSHIP_INVITE_FORBIDDEN (non-CLIENT)"
           },
           "event": [
             {
@@ -5242,7 +5242,7 @@
                 "accept"
               ]
             },
-            "description": "POST /membership-invites/:inviteId/accept — CLIENT accept. Atomic: ACTIVE membership + sub snapshots + required DOB/HEIGHT/WEIGHT + optional checklist. **One ACTIVE membership per client** across gyms.\n\n**Auth:** Bearer CLIENT matching invite  \n**Path:** `inviteId` (`{{membershipInviteId}}`)\n\n**Request body (JSON):**\n- `optionalProfileAttributes` (optional, string[]) — Extra profile grants (default `[]`). Required `DOB`/`HEIGHT`/`WEIGHT` applied server-side — **not** in body. Allowed: `GENDER`, `MEDICAL_NOTES`. Example: `[\"GENDER\"]`.\n- `optionalClassGrants` (optional, string[]) — Class grants (default `[]`). Allowed: `PROGRESS`, `CALORIES`, `WEARABLES`, `DIET_PLANS`, `WORKOUT_PLANS`. Example: `[\"PROGRESS\"]`.\n\nOmit or send `{}` / empty arrays for required-only grants.\n\n**Success `200`:**\n- `membershipInvite` (object) — Updated invite (`status=ACCEPTED`).\n- `membershipId` (uuid) — New ACTIVE membership → `membershipId`.\n- `grants.profileAttributes` (string[]) — Effective attrs (required + optionals). Example: `[\"DOB\",\"HEIGHT\",\"WEIGHT\",\"GENDER\"]`.\n- `grants.classGrants` (string[]) — Effective class grants. Example: `[\"PROGRESS\"]`.\n\n**Errors:** `403` MEMBERSHIP_INVITE_FORBIDDEN · `404` NOT_FOUND · `409` MEMBERSHIP_INVITE_EXPIRED / ACTIVE_MEMBERSHIP_CONFLICT / MEMBERSHIP_INVITE_INVALID_TRANSITION · `422` VALIDATION_ERROR",
+            "description": "**Story:** A client accepts a gym invite and becomes an active member with their plan subscriptions.\n\nPOST /membership-invites/:inviteId/accept — CLIENT accept. Atomic: ACTIVE membership + sub snapshots + required DOB/HEIGHT/WEIGHT + optional checklist. **One ACTIVE membership per client** across gyms.\n\n**Auth:** Bearer CLIENT matching invite  \n**Path:** `inviteId` (`{{membershipInviteId}}`)\n\n**Request body (JSON):**\n- `optionalProfileAttributes` (optional, string[]) — Extra profile grants (default `[]`). Required `DOB`/`HEIGHT`/`WEIGHT` applied server-side — **not** in body. Allowed: `GENDER`, `MEDICAL_NOTES`. Example: `[\"GENDER\"]`.\n- `optionalClassGrants` (optional, string[]) — Class grants (default `[]`). Allowed: `PROGRESS`, `CALORIES`, `WEARABLES`, `DIET_PLANS`, `WORKOUT_PLANS`. Example: `[\"PROGRESS\"]`.\n\nOmit or send `{}` / empty arrays for required-only grants.\n\n**Success `200`:**\n- `membershipInvite` (object) — Updated invite (`status=ACCEPTED`).\n- `membershipId` (uuid) — New ACTIVE membership → `membershipId`.\n- `grants.profileAttributes` (string[]) — Effective attrs (required + optionals). Example: `[\"DOB\",\"HEIGHT\",\"WEIGHT\",\"GENDER\"]`.\n- `grants.classGrants` (string[]) — Effective class grants. Example: `[\"PROGRESS\"]`.\n\n**Errors:** `403` MEMBERSHIP_INVITE_FORBIDDEN · `404` NOT_FOUND · `409` MEMBERSHIP_INVITE_EXPIRED / ACTIVE_MEMBERSHIP_CONFLICT / MEMBERSHIP_INVITE_INVALID_TRANSITION · `422` VALIDATION_ERROR",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"optionalProfileAttributes\": [\"GENDER\"],\n  \"optionalClassGrants\": [\"PROGRESS\"]\n}",
@@ -5444,7 +5444,7 @@
                 "my-data-grants"
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/my-data-grants — CLIENT with **ACTIVE** membership.\n\n**Auth:** Bearer CLIENT  \n**Path:** `gymOrgId`\n\n**Success `200`:** `{ dataGrants }`\n- `gymOrgId` (uuid) — Gym scope.\n- `clientUserId` (uuid) — Client owner.\n- `profileAttributes` (string[]) — Always includes `DOB`/`HEIGHT`/`WEIGHT`; plus `GENDER`/`MEDICAL_NOTES` if granted.\n- `classGrants` (string[]) — Allowed members: `PROGRESS`, `CALORIES`, `WEARABLES`, `DIET_PLANS`, `WORKOUT_PLANS`.\n\n**Errors:** `403` DATA_GRANT_FORBIDDEN · `404` if no ACTIVE membership"
+            "description": "**Story:** A client sees which personal data fields they have shared with their gym.\n\nGET /gym-orgs/:gymOrgId/my-data-grants — CLIENT with **ACTIVE** membership.\n\n**Auth:** Bearer CLIENT  \n**Path:** `gymOrgId`\n\n**Success `200`:** `{ dataGrants }`\n- `gymOrgId` (uuid) — Gym scope.\n- `clientUserId` (uuid) — Client owner.\n- `profileAttributes` (string[]) — Always includes `DOB`/`HEIGHT`/`WEIGHT`; plus `GENDER`/`MEDICAL_NOTES` if granted.\n- `classGrants` (string[]) — Allowed members: `PROGRESS`, `CALORIES`, `WEARABLES`, `DIET_PLANS`, `WORKOUT_PLANS`.\n\n**Errors:** `403` DATA_GRANT_FORBIDDEN · `404` if no ACTIVE membership"
           },
           "response": [
             {
@@ -5544,7 +5544,7 @@
                 "my-data-grants"
               ]
             },
-            "description": "PUT /gym-orgs/:gymOrgId/my-data-grants — replace **optional** checklist. Required `DOB`/`HEIGHT`/`WEIGHT` stay sticky (cannot revoke).\n\n**Auth:** Bearer CLIENT with ACTIVE membership  \n**Path:** `gymOrgId`\n\n**Request body (JSON):**\n- `optionalProfileAttributes` (optional, string[]) — Optional profile attrs (default `[]`). Allowed: `GENDER`, `MEDICAL_NOTES`. Example: `[\"MEDICAL_NOTES\"]`.\n- `optionalClassGrants` (optional, string[]) — Class grants (default `[]`). Allowed: `PROGRESS`, `CALORIES`, `WEARABLES`, `DIET_PLANS`, `WORKOUT_PLANS`. Example: `[\"PROGRESS\",\"CALORIES\"]`.\n\n**Success `200`:** `{ dataGrants }` with sticky required + selected optionals  \n**Errors:** same as Get + `422` VALIDATION_ERROR",
+            "description": "**Story:** A client chooses which optional personal data the gym and trainers may see.\n\nPUT /gym-orgs/:gymOrgId/my-data-grants — replace **optional** checklist. Required `DOB`/`HEIGHT`/`WEIGHT` stay sticky (cannot revoke).\n\n**Auth:** Bearer CLIENT with ACTIVE membership  \n**Path:** `gymOrgId`\n\n**Request body (JSON):**\n- `optionalProfileAttributes` (optional, string[]) — Optional profile attrs (default `[]`). Allowed: `GENDER`, `MEDICAL_NOTES`. Example: `[\"MEDICAL_NOTES\"]`.\n- `optionalClassGrants` (optional, string[]) — Class grants (default `[]`). Allowed: `PROGRESS`, `CALORIES`, `WEARABLES`, `DIET_PLANS`, `WORKOUT_PLANS`. Example: `[\"PROGRESS\",\"CALORIES\"]`.\n\n**Success `200`:** `{ dataGrants }` with sticky required + selected optionals  \n**Errors:** same as Get + `422` VALIDATION_ERROR",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"optionalProfileAttributes\": [\"MEDICAL_NOTES\"],\n  \"optionalClassGrants\": [\"PROGRESS\", \"CALORIES\"]\n}",
@@ -5683,7 +5683,7 @@
                 "subscriptions"
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/clients/:clientUserId/subscriptions — Admin list for a client's ACTIVE membership lines.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:**\n- `gymOrgId` (uuid) — Gym. Example: `{{gymOrgId}}`.\n- `clientUserId` (uuid) — Client user id. Example: `{{clientUserId}}`.\n\n**Success `200`:** `{ subscriptions: [ subscription, ... ] }`\n\n**`subscription` fields:**\n- `id` (uuid) — Subscription line id → store as `subscriptionId`.\n- `clientMembershipId` (uuid) — Owning membership.\n- `gymOrgId` (uuid) — Tenancy.\n- `planId` (uuid) — Snapshotted plan.\n- `kind` (enum) — Values: `BASE`, `ADDON`.\n- `capability` (enum or null) — `TRAINER_COACHING` for ADDON; `null` for BASE.\n- `priceAmount` (number) — Snapshot price.\n- `durationDays` (integer) — Snapshot duration.\n- `startDate` (string `YYYY-MM-DD` or null) — Null = unstarted BASE.\n- `endDate` (string `YYYY-MM-DD` or null) — Inclusive end.\n- `startSource` (enum or null) — Values: `FIRST_ATTENDANCE`, `ADMIN_OVERRIDE`, `ADMIN_ATTACH`, or `null`.\n- `paymentStatus` (enum) — Values: `paid`, `unpaid`, `partial`. Does **not** lock entitlements.\n- `amountPaid` (number) — Derived/partial amount.\n- `createdAt` / `updatedAt` (string, ISO)\n\n**Errors:** `403` PLAN_FORBIDDEN · `404` no ACTIVE membership\n\nGuide: gym-backend `docs/subscriptions.md`."
+            "description": "**Story:** A gym admin reviews a member’s base and add-on subscription lines.\n\nGET /gym-orgs/:gymOrgId/clients/:clientUserId/subscriptions — Admin list for a client's ACTIVE membership lines.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:**\n- `gymOrgId` (uuid) — Gym. Example: `{{gymOrgId}}`.\n- `clientUserId` (uuid) — Client user id. Example: `{{clientUserId}}`.\n\n**Success `200`:** `{ subscriptions: [ subscription, ... ] }`\n\n**`subscription` fields:**\n- `id` (uuid) — Subscription line id → store as `subscriptionId`.\n- `clientMembershipId` (uuid) — Owning membership.\n- `gymOrgId` (uuid) — Tenancy.\n- `planId` (uuid) — Snapshotted plan.\n- `kind` (enum) — Values: `BASE`, `ADDON`.\n- `capability` (enum or null) — `TRAINER_COACHING` for ADDON; `null` for BASE.\n- `priceAmount` (number) — Snapshot price.\n- `durationDays` (integer) — Snapshot duration.\n- `startDate` (string `YYYY-MM-DD` or null) — Null = unstarted BASE.\n- `endDate` (string `YYYY-MM-DD` or null) — Inclusive end.\n- `startSource` (enum or null) — Values: `FIRST_ATTENDANCE`, `ADMIN_OVERRIDE`, `ADMIN_ATTACH`, or `null`.\n- `paymentStatus` (enum) — Values: `paid`, `unpaid`, `partial`. Does **not** lock entitlements.\n- `amountPaid` (number) — Derived/partial amount.\n- `createdAt` / `updatedAt` (string, ISO)\n\n**Errors:** `403` PLAN_FORBIDDEN · `404` no ACTIVE membership\n\nGuide: gym-backend `docs/subscriptions.md`."
           },
           "response": [
             {
@@ -5796,7 +5796,7 @@
                 }
               }
             },
-            "description": "PATCH /gym-orgs/:gymOrgId/subscriptions/:subscriptionId/payment — Admin set payment status.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:**\n- `gymOrgId` (uuid)\n- `subscriptionId` (uuid) — From list → `{{subscriptionId}}`\n\n**Request body (JSON):**\n- `paymentStatus` (required, enum) — Values: `paid`, `unpaid`, `partial`.\n- `amountPaid` (conditional, number) — Required when `partial` (strictly between 0 and snapshotted `priceAmount`). Optional for `paid`/`unpaid` (server derives 0 or full price). Example: `250.5`.\n\n**Success `200`:** `{ subscription }`  \n**Errors:** `403` PLAN_FORBIDDEN · `404` NOT_FOUND · `422` INVALID_SUBSCRIPTION_PAYMENT / VALIDATION_ERROR"
+            "description": "**Story:** A gym admin records whether a subscription is paid, unpaid, or partially paid.\n\nPATCH /gym-orgs/:gymOrgId/subscriptions/:subscriptionId/payment — Admin set payment status.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:**\n- `gymOrgId` (uuid)\n- `subscriptionId` (uuid) — From list → `{{subscriptionId}}`\n\n**Request body (JSON):**\n- `paymentStatus` (required, enum) — Values: `paid`, `unpaid`, `partial`.\n- `amountPaid` (conditional, number) — Required when `partial` (strictly between 0 and snapshotted `priceAmount`). Optional for `paid`/`unpaid` (server derives 0 or full price). Example: `250.5`.\n\n**Success `200`:** `{ subscription }`  \n**Errors:** `403` PLAN_FORBIDDEN · `404` NOT_FOUND · `422` INVALID_SUBSCRIPTION_PAYMENT / VALIDATION_ERROR"
           },
           "response": [
             {
@@ -5951,7 +5951,7 @@
                 }
               }
             },
-            "description": "POST /gym-orgs/:gymOrgId/subscriptions/:subscriptionId/start-override — Admin start an **unstarted BASE** line (A19).\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`, `subscriptionId`\n\n**Request body (JSON):**\n- `startDate` (required, string `YYYY-MM-DD`) — Inclusive start. Sets `endDate = startDate + durationDays - 1`, `startSource = ADMIN_OVERRIDE`. Example: `\"2026-08-01\"`.\n\nOnly **unstarted BASE** (`startDate` null). ADDON or already-started → `INVALID_SUBSCRIPTION_START`.\n\n**Success `200`:** `{ subscription }`  \n**Errors:** `403` · `404` · `422` INVALID_SUBSCRIPTION_START · `409` overlap (ADR-0004)"
+            "description": "**Story:** A gym admin manually starts an unstarted base plan when first attendance should not drive the start date.\n\nPOST /gym-orgs/:gymOrgId/subscriptions/:subscriptionId/start-override — Admin start an **unstarted BASE** line (A19).\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`, `subscriptionId`\n\n**Request body (JSON):**\n- `startDate` (required, string `YYYY-MM-DD`) — Inclusive start. Sets `endDate = startDate + durationDays - 1`, `startSource = ADMIN_OVERRIDE`. Example: `\"2026-08-01\"`.\n\nOnly **unstarted BASE** (`startDate` null). ADDON or already-started → `INVALID_SUBSCRIPTION_START`.\n\n**Success `200`:** `{ subscription }`  \n**Errors:** `403` · `404` · `422` INVALID_SUBSCRIPTION_START · `409` overlap (ADR-0004)"
           },
           "response": [
             {
@@ -6075,7 +6075,7 @@
                 "my-subscriptions"
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/my-subscriptions — Client self-read of ACTIVE membership lines (C10).\n\n**Auth:** Bearer CLIENT with ACTIVE membership at gym  \n**Path:** `gymOrgId`\n\n**Success `200`:** `{ subscriptions: [ ... ] }` — same `subscription` shape as Admin list.  \n**Errors:** `403` SUBSCRIPTION_FORBIDDEN · `404` no ACTIVE membership"
+            "description": "**Story:** A client views their own active plan lines at this gym.\n\nGET /gym-orgs/:gymOrgId/my-subscriptions — Client self-read of ACTIVE membership lines (C10).\n\n**Auth:** Bearer CLIENT with ACTIVE membership at gym  \n**Path:** `gymOrgId`\n\n**Success `200`:** `{ subscriptions: [ ... ] }` — same `subscription` shape as Admin list.  \n**Errors:** `403` SUBSCRIPTION_FORBIDDEN · `404` no ACTIVE membership"
           },
           "response": [
             {
@@ -6193,7 +6193,7 @@
                 }
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/subscriptions/renewals-due — Admin renewals / expiring-soon list (A9). BASE + ADDON, labeled by `kind` / `capability`. No push yet.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`\n\n**Query:**\n- `onOrBefore` (optional, `YYYY-MM-DD`) — Inclusive upper bound on `end_date`. Default: UTC today.\n- `onOrAfter` (optional, `YYYY-MM-DD`) — Inclusive lower bound on `end_date`.\n- `limit`, `offset` — Pagination.\n\n**Success `200`:** `{ renewals: { items, total, limit, offset } }`\n\n**`items[]`:** subscription DTO fields plus:\n- `clientUserId` (uuid) — Member owning the membership line.\n- `kind` (enum) — Values: `BASE`, `ADDON`.\n- `capability` (enum|null) — ADDON only. Values: `TRAINER_COACHING`.\n- `endDate` (string|null `YYYY-MM-DD`) — Expiry.\n- `paymentStatus` (enum) — Values: `paid`, `unpaid`, `partial`.\n\n**Errors:** `403` PLAN_FORBIDDEN · `422` VALIDATION_ERROR"
+            "description": "**Story:** A gym admin sees members whose base or add-on plans are ending soon so they can chase renewals.\n\nGET /gym-orgs/:gymOrgId/subscriptions/renewals-due — Admin renewals / expiring-soon list (A9). BASE + ADDON, labeled by `kind` / `capability`. No push yet.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`\n\n**Query:**\n- `onOrBefore` (optional, `YYYY-MM-DD`) — Inclusive upper bound on `end_date`. Default: UTC today.\n- `onOrAfter` (optional, `YYYY-MM-DD`) — Inclusive lower bound on `end_date`.\n- `limit`, `offset` — Pagination.\n\n**Success `200`:** `{ renewals: { items, total, limit, offset } }`\n\n**`items[]`:** subscription DTO fields plus:\n- `clientUserId` (uuid) — Member owning the membership line.\n- `kind` (enum) — Values: `BASE`, `ADDON`.\n- `capability` (enum|null) — ADDON only. Values: `TRAINER_COACHING`.\n- `endDate` (string|null `YYYY-MM-DD`) — Expiry.\n- `paymentStatus` (enum) — Values: `paid`, `unpaid`, `partial`.\n\n**Errors:** `403` PLAN_FORBIDDEN · `422` VALIDATION_ERROR"
           },
           "response": [
             {
@@ -6371,7 +6371,7 @@
                 }
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/members — Admin full gym roster.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:**\n- `gymOrgId` (uuid) — Gym. Example: `{{gymOrgId}}`.\n\n**Query:**\n- `status` (optional, enum) — Values: `ACTIVE`, `INACTIVE`. Default: `ACTIVE`.\n- `q` (optional, string) — Search name / email / phone.\n\n**Success `200`:** `{ members: [ member, ... ] }`\n\n**`member` fields:**\n- `membershipId` (uuid) — Membership id (same as `{{membershipId}}`).\n- `clientUserId` (uuid) — Client user.\n- `gymOrgId` (uuid) — Tenancy.\n- `status` (enum) — Values: `ACTIVE`, `INACTIVE`.\n- `checkInBlocked` (boolean) — Manual Admin safety valve.\n- `assignedTrainerId` (uuid or null) — `trainer_profiles.id`.\n- `clientName` / `clientEmail` (string) — From `users`.\n- `clientPhone` (string or null) — Optional contact.\n- `joinedAt` (string, ISO) — Accept time.\n- `leftAt` (string ISO or null) — Set on offboard.\n- `basePaymentStatus` (enum or null) — Values: `paid`, `unpaid`, `partial`, or `null`.\n- `baseAmountPaid` / `basePriceAmount` (number or null) — BASE line badge.\n\n**`membership` (mutation) fields:**\n- `membershipId`, `clientUserId`, `gymOrgId` (uuid)\n- `status` (enum) — Values: `ACTIVE`, `INACTIVE`.\n- `checkInBlocked` (boolean)\n- `assignedTrainerId` (uuid or null)\n- `joinedAt` / `leftAt` / `updatedAt` (ISO; `leftAt` nullable)\n\n**Errors:** `403` PLAN_FORBIDDEN\n\nGuide: gym-backend `docs/roster.md`."
+            "description": "**Story:** A gym admin browses the full member roster for the gym.\n\nGET /gym-orgs/:gymOrgId/members — Admin full gym roster.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:**\n- `gymOrgId` (uuid) — Gym. Example: `{{gymOrgId}}`.\n\n**Query:**\n- `status` (optional, enum) — Values: `ACTIVE`, `INACTIVE`. Default: `ACTIVE`.\n- `q` (optional, string) — Search name / email / phone.\n\n**Success `200`:** `{ members: [ member, ... ] }`\n\n**`member` fields:**\n- `membershipId` (uuid) — Membership id (same as `{{membershipId}}`).\n- `clientUserId` (uuid) — Client user.\n- `gymOrgId` (uuid) — Tenancy.\n- `status` (enum) — Values: `ACTIVE`, `INACTIVE`.\n- `checkInBlocked` (boolean) — Manual Admin safety valve.\n- `assignedTrainerId` (uuid or null) — `trainer_profiles.id`.\n- `clientName` / `clientEmail` (string) — From `users`.\n- `clientPhone` (string or null) — Optional contact.\n- `joinedAt` (string, ISO) — Accept time.\n- `leftAt` (string ISO or null) — Set on offboard.\n- `basePaymentStatus` (enum or null) — Values: `paid`, `unpaid`, `partial`, or `null`.\n- `baseAmountPaid` / `basePriceAmount` (number or null) — BASE line badge.\n\n**`membership` (mutation) fields:**\n- `membershipId`, `clientUserId`, `gymOrgId` (uuid)\n- `status` (enum) — Values: `ACTIVE`, `INACTIVE`.\n- `checkInBlocked` (boolean)\n- `assignedTrainerId` (uuid or null)\n- `joinedAt` / `leftAt` / `updatedAt` (ISO; `leftAt` nullable)\n\n**Errors:** `403` PLAN_FORBIDDEN\n\nGuide: gym-backend `docs/roster.md`."
           },
           "response": [
             {
@@ -6505,7 +6505,7 @@
                 }
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/my-assigned-members — Trainer (or Admin-as-Trainer) assigned roster.\n\n**Auth:** Bearer with live `trainer_profiles` at gym  \n**Path:**\n- `gymOrgId` (uuid) — Gym. Example: `{{gymOrgId}}`.\n\n**Query:**\n- `status` (optional, enum) — Values: `ACTIVE`, `INACTIVE`. Omit = all statuses.\n- `q` (optional, string) — Search name / email / phone.\n\n**Success `200`:** `{ members: [ member, ... ] }` scoped to actor's trainer profile.\n\n**`member` fields:**\n- `membershipId` (uuid) — Membership id (same as `{{membershipId}}`).\n- `clientUserId` (uuid) — Client user.\n- `gymOrgId` (uuid) — Tenancy.\n- `status` (enum) — Values: `ACTIVE`, `INACTIVE`.\n- `checkInBlocked` (boolean) — Manual Admin safety valve.\n- `assignedTrainerId` (uuid or null) — `trainer_profiles.id`.\n- `clientName` / `clientEmail` (string) — From `users`.\n- `clientPhone` (string or null) — Optional contact.\n- `joinedAt` (string, ISO) — Accept time.\n- `leftAt` (string ISO or null) — Set on offboard.\n- `basePaymentStatus` (enum or null) — Values: `paid`, `unpaid`, `partial`, or `null`.\n- `baseAmountPaid` / `basePriceAmount` (number or null) — BASE line badge.\n\n**`membership` (mutation) fields:**\n- `membershipId`, `clientUserId`, `gymOrgId` (uuid)\n- `status` (enum) — Values: `ACTIVE`, `INACTIVE`.\n- `checkInBlocked` (boolean)\n- `assignedTrainerId` (uuid or null)\n- `joinedAt` / `leftAt` / `updatedAt` (ISO; `leftAt` nullable)\n\n**Errors:** `403` ROSTER_FORBIDDEN\n\nGuide: gym-backend `docs/roster.md`."
+            "description": "**Story:** A trainer sees the clients assigned to them for coaching.\n\nGET /gym-orgs/:gymOrgId/my-assigned-members — Trainer (or Admin-as-Trainer) assigned roster.\n\n**Auth:** Bearer with live `trainer_profiles` at gym  \n**Path:**\n- `gymOrgId` (uuid) — Gym. Example: `{{gymOrgId}}`.\n\n**Query:**\n- `status` (optional, enum) — Values: `ACTIVE`, `INACTIVE`. Omit = all statuses.\n- `q` (optional, string) — Search name / email / phone.\n\n**Success `200`:** `{ members: [ member, ... ] }` scoped to actor's trainer profile.\n\n**`member` fields:**\n- `membershipId` (uuid) — Membership id (same as `{{membershipId}}`).\n- `clientUserId` (uuid) — Client user.\n- `gymOrgId` (uuid) — Tenancy.\n- `status` (enum) — Values: `ACTIVE`, `INACTIVE`.\n- `checkInBlocked` (boolean) — Manual Admin safety valve.\n- `assignedTrainerId` (uuid or null) — `trainer_profiles.id`.\n- `clientName` / `clientEmail` (string) — From `users`.\n- `clientPhone` (string or null) — Optional contact.\n- `joinedAt` (string, ISO) — Accept time.\n- `leftAt` (string ISO or null) — Set on offboard.\n- `basePaymentStatus` (enum or null) — Values: `paid`, `unpaid`, `partial`, or `null`.\n- `baseAmountPaid` / `basePriceAmount` (number or null) — BASE line badge.\n\n**`membership` (mutation) fields:**\n- `membershipId`, `clientUserId`, `gymOrgId` (uuid)\n- `status` (enum) — Values: `ACTIVE`, `INACTIVE`.\n- `checkInBlocked` (boolean)\n- `assignedTrainerId` (uuid or null)\n- `joinedAt` / `leftAt` / `updatedAt` (ISO; `leftAt` nullable)\n\n**Errors:** `403` ROSTER_FORBIDDEN\n\nGuide: gym-backend `docs/roster.md`."
           },
           "response": [
             {
@@ -6642,7 +6642,7 @@
                 "assign-trainer"
               ]
             },
-            "description": "POST /gym-orgs/:gymOrgId/members/:membershipId/assign-trainer — Admin assign/reassign.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:**\n- `gymOrgId` (uuid) — Gym.\n- `membershipId` (uuid) — ACTIVE membership. Example: `{{membershipId}}`.\n\n**Request body (JSON):**\n- `trainerProfileId` (required, uuid) — Live `trainer_profiles.id` at this gym (Admin may use self). Example: `{{trainerProfileId}}`.\n\nRequires in-date `TRAINER_COACHING` ADDON on the membership (payment ignored).\n\n**Success `200`:** `{ membership }`\n\n**`member` fields:**\n- `membershipId` (uuid) — Membership id (same as `{{membershipId}}`).\n- `clientUserId` (uuid) — Client user.\n- `gymOrgId` (uuid) — Tenancy.\n- `status` (enum) — Values: `ACTIVE`, `INACTIVE`.\n- `checkInBlocked` (boolean) — Manual Admin safety valve.\n- `assignedTrainerId` (uuid or null) — `trainer_profiles.id`.\n- `clientName` / `clientEmail` (string) — From `users`.\n- `clientPhone` (string or null) — Optional contact.\n- `joinedAt` (string, ISO) — Accept time.\n- `leftAt` (string ISO or null) — Set on offboard.\n- `basePaymentStatus` (enum or null) — Values: `paid`, `unpaid`, `partial`, or `null`.\n- `baseAmountPaid` / `basePriceAmount` (number or null) — BASE line badge.\n\n**`membership` (mutation) fields:**\n- `membershipId`, `clientUserId`, `gymOrgId` (uuid)\n- `status` (enum) — Values: `ACTIVE`, `INACTIVE`.\n- `checkInBlocked` (boolean)\n- `assignedTrainerId` (uuid or null)\n- `joinedAt` / `leftAt` / `updatedAt` (ISO; `leftAt` nullable)\n\n**Errors:** `404` membership/trainer · `422` COACHING_ADDON_REQUIRED · CLIENT_MEMBERSHIP_INVALID_TRANSITION\n\nGuide: gym-backend `docs/roster.md`."
+            "description": "**Story:** A gym admin pairs a client with a trainer so coaching can begin.\n\nPOST /gym-orgs/:gymOrgId/members/:membershipId/assign-trainer — Admin assign/reassign.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:**\n- `gymOrgId` (uuid) — Gym.\n- `membershipId` (uuid) — ACTIVE membership. Example: `{{membershipId}}`.\n\n**Request body (JSON):**\n- `trainerProfileId` (required, uuid) — Live `trainer_profiles.id` at this gym (Admin may use self). Example: `{{trainerProfileId}}`.\n\nRequires in-date `TRAINER_COACHING` ADDON on the membership (payment ignored).\n\n**Success `200`:** `{ membership }`\n\n**`member` fields:**\n- `membershipId` (uuid) — Membership id (same as `{{membershipId}}`).\n- `clientUserId` (uuid) — Client user.\n- `gymOrgId` (uuid) — Tenancy.\n- `status` (enum) — Values: `ACTIVE`, `INACTIVE`.\n- `checkInBlocked` (boolean) — Manual Admin safety valve.\n- `assignedTrainerId` (uuid or null) — `trainer_profiles.id`.\n- `clientName` / `clientEmail` (string) — From `users`.\n- `clientPhone` (string or null) — Optional contact.\n- `joinedAt` (string, ISO) — Accept time.\n- `leftAt` (string ISO or null) — Set on offboard.\n- `basePaymentStatus` (enum or null) — Values: `paid`, `unpaid`, `partial`, or `null`.\n- `baseAmountPaid` / `basePriceAmount` (number or null) — BASE line badge.\n\n**`membership` (mutation) fields:**\n- `membershipId`, `clientUserId`, `gymOrgId` (uuid)\n- `status` (enum) — Values: `ACTIVE`, `INACTIVE`.\n- `checkInBlocked` (boolean)\n- `assignedTrainerId` (uuid or null)\n- `joinedAt` / `leftAt` / `updatedAt` (ISO; `leftAt` nullable)\n\n**Errors:** `404` membership/trainer · `422` COACHING_ADDON_REQUIRED · CLIENT_MEMBERSHIP_INVALID_TRANSITION\n\nGuide: gym-backend `docs/roster.md`."
           },
           "response": [
             {
@@ -6768,7 +6768,7 @@
                 "offboard"
               ]
             },
-            "description": "POST /gym-orgs/:gymOrgId/members/:membershipId/offboard — set INACTIVE + clear all DataGrants.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:**\n- `gymOrgId` (uuid) — Gym.\n- `membershipId` (uuid) — ACTIVE membership.\n\nAtomic RPC: membership → `INACTIVE`, `left_at` set; all profile + class grants for (client, gym) soft-deleted. Attendance/subscriptions retained; assigned trainer kept for history.\n\n**Success `200`:** `{ membership }` with `status: INACTIVE`\n\n**Errors:** `404` · `409` already inactive\n\nGuide: gym-backend `docs/roster.md`."
+            "description": "**Story:** A gym admin ends a client’s membership and clears their data grants at this gym.\n\nPOST /gym-orgs/:gymOrgId/members/:membershipId/offboard — set INACTIVE + clear all DataGrants.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:**\n- `gymOrgId` (uuid) — Gym.\n- `membershipId` (uuid) — ACTIVE membership.\n\nAtomic RPC: membership → `INACTIVE`, `left_at` set; all profile + class grants for (client, gym) soft-deleted. Attendance/subscriptions retained; assigned trainer kept for history.\n\n**Success `200`:** `{ membership }` with `status: INACTIVE`\n\n**Errors:** `404` · `409` already inactive\n\nGuide: gym-backend `docs/roster.md`."
           },
           "response": [
             {
@@ -6881,7 +6881,7 @@
                 "check-in-block"
               ]
             },
-            "description": "PATCH /gym-orgs/:gymOrgId/members/:membershipId/check-in-block — Admin block/unblock check-in.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:**\n- `gymOrgId` (uuid) — Gym.\n- `membershipId` (uuid) — ACTIVE membership.\n\n**Request body (JSON):**\n- `blocked` (required, boolean) — `true` to block, `false` to unblock. Example: `true`.\n\nManual safety valve — not tied to payment. Attendance enforcement is Stint 2.\n\n**Success `200`:** `{ membership }`\n\n**Errors:** `404` · `422` inactive membership\n\nGuide: gym-backend `docs/roster.md`."
+            "description": "**Story:** A gym admin blocks or unblocks a member from checking in (e.g. unpaid dues).\n\nPATCH /gym-orgs/:gymOrgId/members/:membershipId/check-in-block — Admin block/unblock check-in.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:**\n- `gymOrgId` (uuid) — Gym.\n- `membershipId` (uuid) — ACTIVE membership.\n\n**Request body (JSON):**\n- `blocked` (required, boolean) — `true` to block, `false` to unblock. Example: `true`.\n\nManual safety valve — not tied to payment. Attendance enforcement is Stint 2.\n\n**Success `200`:** `{ membership }`\n\n**Errors:** `404` · `422` inactive membership\n\nGuide: gym-backend `docs/roster.md`."
           },
           "response": [
             {
@@ -7011,7 +7011,7 @@
                 "check-in"
               ]
             },
-            "description": "POST /gym-orgs/:gymOrgId/attendances/check-in — Client self check-in (C4).\n\n**Auth:** Bearer CLIENT  \n**Path:**\n- `gymOrgId` (uuid) — Gym. Example: `{{gymOrgId}}`.\n\nNo body. Eligibility: ACTIVE membership, `!checkInBlocked`, BASE unstarted **or** in-date (gym TZ). Unstarted BASE starts with `startSource = FIRST_ATTENDANCE`. Payment status does **not** block.\n\n**Success `201`:** `{ attendance }`\n\n**`attendance` fields:**\n- `id` (uuid) — Attendance id.\n- `clientUserId` (uuid) — Member.\n- `gymOrgId` (uuid) — Gym.\n- `occurredAt` (ISO timestamptz) — Check-in instant (UTC).\n- `recordedBy` (enum) — Values: `CLIENT`, `ADMIN`.\n- `recorderUserId` (uuid) — Actor who recorded.\n- `createdAt` (ISO timestamptz).\n- `baseStarted` (boolean) — `true` if this check-in started an unstarted BASE.\n\n**Errors:** `403` ATTENDANCE_FORBIDDEN · `422` CHECK_IN_NOT_ALLOWED (`NO_ACTIVE_MEMBERSHIP`, `CHECK_IN_BLOCKED`, `NO_BASE_SUBSCRIPTION`, `BASE_OUT_OF_DATE`)"
+            "description": "**Story:** A client marks their own attendance for the day when they arrive at the gym.\n\nPOST /gym-orgs/:gymOrgId/attendances/check-in — Client self check-in (C4).\n\n**Auth:** Bearer CLIENT  \n**Path:**\n- `gymOrgId` (uuid) — Gym. Example: `{{gymOrgId}}`.\n\nNo body. Eligibility: ACTIVE membership, `!checkInBlocked`, BASE unstarted **or** in-date (gym TZ). Unstarted BASE starts with `startSource = FIRST_ATTENDANCE`. Payment status does **not** block.\n\n**Success `201`:** `{ attendance }`\n\n**`attendance` fields:**\n- `id` (uuid) — Attendance id.\n- `clientUserId` (uuid) — Member.\n- `gymOrgId` (uuid) — Gym.\n- `occurredAt` (ISO timestamptz) — Check-in instant (UTC).\n- `recordedBy` (enum) — Values: `CLIENT`, `ADMIN`.\n- `recorderUserId` (uuid) — Actor who recorded.\n- `createdAt` (ISO timestamptz).\n- `baseStarted` (boolean) — `true` if this check-in started an unstarted BASE.\n\n**Errors:** `403` ATTENDANCE_FORBIDDEN · `422` CHECK_IN_NOT_ALLOWED (`NO_ACTIVE_MEMBERSHIP`, `CHECK_IN_BLOCKED`, `NO_BASE_SUBSCRIPTION`, `BASE_OUT_OF_DATE`)"
           },
           "response": [
             {
@@ -7121,7 +7121,7 @@
                 }
               }
             },
-            "description": "POST /gym-orgs/:gymOrgId/attendances/desk-mark — Admin desk mark present (A5).\n\n**Auth:** Bearer ADMIN at gym  \n**Path:**\n- `gymOrgId` (uuid) — Gym. Example: `{{gymOrgId}}`.\n\n**Request body (JSON):**\n- `clientUserId` (required, uuid) — Member to mark. Example: `{{clientUserId}}`.\n\nSame eligibility as self check-in. `recordedBy = ADMIN`. Trainer cannot write.\n\n**Success `201`:** `{ attendance }` (same shape as check-in; `recordedBy` is `ADMIN`)  \n**Errors:** `403` · `422` CHECK_IN_NOT_ALLOWED · `422` VALIDATION_ERROR"
+            "description": "**Story:** A gym admin marks a client present from the front desk.\n\nPOST /gym-orgs/:gymOrgId/attendances/desk-mark — Admin desk mark present (A5).\n\n**Auth:** Bearer ADMIN at gym  \n**Path:**\n- `gymOrgId` (uuid) — Gym. Example: `{{gymOrgId}}`.\n\n**Request body (JSON):**\n- `clientUserId` (required, uuid) — Member to mark. Example: `{{clientUserId}}`.\n\nSame eligibility as self check-in. `recordedBy = ADMIN`. Trainer cannot write.\n\n**Success `201`:** `{ attendance }` (same shape as check-in; `recordedBy` is `ADMIN`)  \n**Errors:** `403` · `422` CHECK_IN_NOT_ALLOWED · `422` VALIDATION_ERROR"
           },
           "response": [
             {
@@ -7260,7 +7260,7 @@
                 }
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/attendances — Admin gym-day attendance list.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`\n\n**Query:**\n- `day` (optional, string `YYYY-MM-DD`) — Gym-local calendar day. Default: today in gym timezone.\n- `limit` (optional, int 1–100) — Default 20.\n- `offset` (optional, int ≥0) — Default 0.\n\n**Success `200`:** `{ attendances: { items, total, limit, offset } }`  \n**`items[]`:** attendance DTO; `baseStarted` is always `false` on list reads.  \n**Errors:** `403` · `422` VALIDATION_ERROR"
+            "description": "**Story:** A gym admin sees who checked in on a given gym day.\n\nGET /gym-orgs/:gymOrgId/attendances — Admin gym-day attendance list.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`\n\n**Query:**\n- `day` (optional, string `YYYY-MM-DD`) — Gym-local calendar day. Default: today in gym timezone.\n- `limit` (optional, int 1–100) — Default 20.\n- `offset` (optional, int ≥0) — Default 0.\n\n**Success `200`:** `{ attendances: { items, total, limit, offset } }`  \n**`items[]`:** attendance DTO; `baseStarted` is always `false` on list reads.  \n**Errors:** `403` · `422` VALIDATION_ERROR"
           },
           "response": [
             {
@@ -7351,7 +7351,7 @@
                 }
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/attendances/clients/:clientUserId — Staff per-client attendance history (gym-owned; no PROGRESS grant required).\n\n**Auth:** Bearer ADMIN or TRAINER live at gym  \n**Path:** `gymOrgId`, `clientUserId`\n\n**Query:** `limit`, `offset` (same as list gym day).\n\n**Success `200`:** `{ attendances: { items, total, limit, offset } }`  \n**Errors:** `403` ATTENDANCE_FORBIDDEN"
+            "description": "**Story:** Staff review one client’s attendance history at the gym.\n\nGET /gym-orgs/:gymOrgId/attendances/clients/:clientUserId — Staff per-client attendance history (gym-owned; no PROGRESS grant required).\n\n**Auth:** Bearer ADMIN or TRAINER live at gym  \n**Path:** `gymOrgId`, `clientUserId`\n\n**Query:** `limit`, `offset` (same as list gym day).\n\n**Success `200`:** `{ attendances: { items, total, limit, offset } }`  \n**Errors:** `403` ATTENDANCE_FORBIDDEN"
           },
           "response": [
             {
@@ -7437,7 +7437,7 @@
                 }
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/my-attendances — Client own attendance history at this gym.\n\n**Auth:** Bearer CLIENT  \n**Path:** `gymOrgId`\n\n**Query:** `limit`, `offset`.\n\n**Success `200`:** `{ attendances: { items, total, limit, offset } }`  \n**Errors:** `403` ATTENDANCE_FORBIDDEN"
+            "description": "**Story:** A client reviews their own check-in history at this gym.\n\nGET /gym-orgs/:gymOrgId/my-attendances — Client own attendance history at this gym.\n\n**Auth:** Bearer CLIENT  \n**Path:** `gymOrgId`\n\n**Query:** `limit`, `offset`.\n\n**Success `200`:** `{ attendances: { items, total, limit, offset } }`  \n**Errors:** `403` ATTENDANCE_FORBIDDEN"
           },
           "response": [
             {
@@ -7513,7 +7513,7 @@
                 "profile"
               ]
             },
-            "description": "GET /me/profile — Client own profile + BMI (C7, C8, C14).\n\n**Auth:** Bearer CLIENT\n\n**Success `200`:** `{ profile }`\n\n**`profile` fields:**\n- `userId` (uuid)\n- `heightCm` (number|null) — Height cm.\n- `weightKg` (number|null) — Current weight kg (from latest ProgressLog / profile edit).\n- `dob` (string|null `YYYY-MM-DD`)\n- `gender` (enum|null) — Values: `MALE`, `FEMALE`, `OTHER`.\n- `medicalNotes` (string|null) — Sensitive; never log.\n- `bmi` (number|null) — Derived when height + weight set.\n- `createdAt`, `updatedAt` (ISO timestamptz)\n\n**Errors:** `403` USERS_FORBIDDEN · `404` NOT_FOUND"
+            "description": "**Story:** A client opens their profile (height, weight, BMI, and basics) in the app.\n\nGET /me/profile — Client own profile + BMI (C7, C8, C14).\n\n**Auth:** Bearer CLIENT\n\n**Success `200`:** `{ profile }`\n\n**`profile` fields:**\n- `userId` (uuid)\n- `heightCm` (number|null) — Height cm.\n- `weightKg` (number|null) — Current weight kg (from latest ProgressLog / profile edit).\n- `dob` (string|null `YYYY-MM-DD`)\n- `gender` (enum|null) — Values: `MALE`, `FEMALE`, `OTHER`.\n- `medicalNotes` (string|null) — Sensitive; never log.\n- `bmi` (number|null) — Derived when height + weight set.\n- `createdAt`, `updatedAt` (ISO timestamptz)\n\n**Errors:** `403` USERS_FORBIDDEN · `404` NOT_FOUND"
           },
           "response": [
             {
@@ -7617,7 +7617,7 @@
                 }
               }
             },
-            "description": "PATCH /me/profile — Client edit profile. Weight change upserts **today’s** ProgressLog (UTC calendar day) and refreshes `weight_kg`.\n\n**Auth:** Bearer CLIENT\n\n**Request body (JSON):** all fields required (nullable):\n- `heightCm` (number|null) — 0–300 cm.\n- `weightKg` (number|null) — 0–500 kg.\n- `dob` (string|null `YYYY-MM-DD`)\n- `gender` (enum|null) — Values: `MALE`, `FEMALE`, `OTHER`.\n- `medicalNotes` (string|null) — Max 5000 chars.\n\n**Success `200`:** `{ profile }`  \n**Errors:** `403` · `404` · `422` VALIDATION_ERROR / INVALID_PROFILE"
+            "description": "**Story:** A client updates profile fields; a weight change also logs today’s progress entry.\n\nPATCH /me/profile — Client edit profile. Weight change upserts **today’s** ProgressLog (UTC calendar day) and refreshes `weight_kg`.\n\n**Auth:** Bearer CLIENT\n\n**Request body (JSON):** all fields required (nullable):\n- `heightCm` (number|null) — 0–300 cm.\n- `weightKg` (number|null) — 0–500 kg.\n- `dob` (string|null `YYYY-MM-DD`)\n- `gender` (enum|null) — Values: `MALE`, `FEMALE`, `OTHER`.\n- `medicalNotes` (string|null) — Max 5000 chars.\n\n**Success `200`:** `{ profile }`  \n**Errors:** `403` · `404` · `422` VALIDATION_ERROR / INVALID_PROFILE"
           },
           "response": [
             {
@@ -7746,7 +7746,7 @@
                 }
               ]
             },
-            "description": "GET /me/progress-logs — Client own progress / weight history.\n\n**Auth:** Bearer CLIENT\n\n**Query:** `limit`, `offset`.\n\n**Success `200`:** `{ progressLogs: { items, total, limit, offset } }`\n\n**`items[]` fields:**\n- `id` (uuid)\n- `clientUserId` (uuid)\n- `logDate` (string `YYYY-MM-DD`)\n- `weightKg` (number|null)\n- `bmi` (number|null) — Denorm at write from height + weight.\n- `notes` (string|null)\n- `createdAt` (ISO timestamptz)\n\n**Errors:** `403`"
+            "description": "**Story:** A client browses their weight and progress history over time.\n\nGET /me/progress-logs — Client own progress / weight history.\n\n**Auth:** Bearer CLIENT\n\n**Query:** `limit`, `offset`.\n\n**Success `200`:** `{ progressLogs: { items, total, limit, offset } }`\n\n**`items[]` fields:**\n- `id` (uuid)\n- `clientUserId` (uuid)\n- `logDate` (string `YYYY-MM-DD`)\n- `weightKg` (number|null)\n- `bmi` (number|null) — Denorm at write from height + weight.\n- `notes` (string|null)\n- `createdAt` (ISO timestamptz)\n\n**Errors:** `403`"
           },
           "response": [
             {
@@ -7829,7 +7829,7 @@
                 }
               }
             },
-            "description": "PUT /me/progress-logs — Upsert ProgressLog for a calendar date; updates profile current weight when `weightKg` set.\n\n**Auth:** Bearer CLIENT\n\n**Request body (JSON):**\n- `logDate` (required, string `YYYY-MM-DD`) — Client calendar date.\n- `weightKg` (required, number|null) — 0–500 kg.\n- `notes` (required, string|null) — Max 2000 chars.\n\n**Success `200`:** `{ progressLog }`  \n**Errors:** `403` · `404` · `422`"
+            "description": "**Story:** A client logs or corrects weight/progress for a specific day.\n\nPUT /me/progress-logs — Upsert ProgressLog for a calendar date; updates profile current weight when `weightKg` set.\n\n**Auth:** Bearer CLIENT\n\n**Request body (JSON):**\n- `logDate` (required, string `YYYY-MM-DD`) — Client calendar date.\n- `weightKg` (required, number|null) — 0–500 kg.\n- `notes` (required, string|null) — Max 2000 chars.\n\n**Success `200`:** `{ progressLog }`  \n**Errors:** `403` · `404` · `422`"
           },
           "response": [
             {
@@ -7949,7 +7949,7 @@
                 "profile"
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/clients/:clientUserId/profile — Staff read of granted profile fields (T4, A17).\n\n**Auth:** Bearer ADMIN or TRAINER live at gym  \n**Path:** `gymOrgId`, `clientUserId`\n\nRequires ACTIVE membership + live grants. Response fields filtered to granted profile attributes. BMI only if HEIGHT **and** WEIGHT granted. MEDICAL_NOTES only with that attribute grant. Absent affiliation/grants → `403`.\n\n**Success `200`:** `{ profile }` (ungranted fields null)  \n**Errors:** `403` USERS_FORBIDDEN · `404` NOT_FOUND"
+            "description": "**Story:** Staff view the parts of a client’s profile the client has granted them access to.\n\nGET /gym-orgs/:gymOrgId/clients/:clientUserId/profile — Staff read of granted profile fields (T4, A17).\n\n**Auth:** Bearer ADMIN or TRAINER live at gym  \n**Path:** `gymOrgId`, `clientUserId`\n\nRequires ACTIVE membership + live grants. Response fields filtered to granted profile attributes. BMI only if HEIGHT **and** WEIGHT granted. MEDICAL_NOTES only with that attribute grant. Absent affiliation/grants → `403`.\n\n**Success `200`:** `{ profile }` (ungranted fields null)  \n**Errors:** `403` USERS_FORBIDDEN · `404` NOT_FOUND"
           },
           "response": [
             {
@@ -8061,7 +8061,7 @@
                 }
               ]
             },
-            "description": "GET /gym-orgs/:gymOrgId/clients/:clientUserId/progress-logs — Staff progress history; requires `PROGRESS` class DataGrant.\n\n**Auth:** Bearer ADMIN or TRAINER live at gym  \n**Path:** `gymOrgId`, `clientUserId`\n\n**Query:** `limit`, `offset`.\n\n**Success `200`:** `{ progressLogs: { items, total, limit, offset } }`  \n**Errors:** `403` USERS_FORBIDDEN (no PROGRESS grant / no active membership)"
+            "description": "**Story:** Staff view a client’s progress history when the client has granted progress access.\n\nGET /gym-orgs/:gymOrgId/clients/:clientUserId/progress-logs — Staff progress history; requires `PROGRESS` class DataGrant.\n\n**Auth:** Bearer ADMIN or TRAINER live at gym  \n**Path:** `gymOrgId`, `clientUserId`\n\n**Query:** `limit`, `offset`.\n\n**Success `200`:** `{ progressLogs: { items, total, limit, offset } }`  \n**Errors:** `403` USERS_FORBIDDEN (no PROGRESS grant / no active membership)"
           },
           "response": [
             {
