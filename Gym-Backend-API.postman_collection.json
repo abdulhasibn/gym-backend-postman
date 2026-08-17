@@ -132,7 +132,7 @@
       "key": "trainerProfileId",
       "value": "",
       "type": "default",
-      "description": "Live trainer_profiles.id at gym (from DB / Admin self profile)"
+      "description": "Live trainer_profiles.id at gym (set by List Gym Trainers, or Admin-as-Trainer self)"
     },
     {
       "key": "foodItemId",
@@ -2345,6 +2345,169 @@
           "createdAt": "2026-08-05T00:51:07.000Z",
           "updatedAt": "2026-08-05T00:53:28.000Z",
           "uid": "25800783-1239ac54-ba81-c9a6-cd03-b906a74c3310"
+        },
+        {
+          "name": "List Gym Trainers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('trainers page shape', function () {",
+                  "  pm.expect(body).to.have.property('trainers');",
+                  "  pm.expect(body.trainers).to.include.keys('items', 'total', 'limit', 'offset');",
+                  "  pm.expect(body.trainers.items).to.be.an('array');",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200 && body.trainers && body.trainers.items && body.trainers.items[0]) {",
+                  "  pm.collectionVariables.set('trainerProfileId', body.trainers.items[0].trainerProfileId);",
+                  "  pm.environment.set('trainerProfileId', body.trainers.items[0].trainerProfileId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "238c5bde-a5ac-4a46-aa50-08025e35aad8",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Accept"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/trainers?limit=20&offset=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "trainers"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Page size. Integer 1\u2013100. Default 20. Example: `20`."
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Skip count. Integer \u2265 0. Default 0. Example: `0`."
+                }
+              ]
+            },
+            "description": "**Story:** A gym admin opens the gym\u2019s trainer list to pick who to assign to a client.\n\nGET /gym-orgs/:gymOrgId/trainers \u2014 live trainer profiles at the gym (accepted Trainer invites plus Admin-as-Trainer). Use trainerProfileId on Assign Trainer. Not staff invites (those return invitedUserId, which is users.id).\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`\n\n**Query params:**\n- `limit` (optional, integer) \u2014 Page size 1\u2013100, default 20. Example: `20`.\n- `offset` (optional, integer) \u2014 Skip, default 0. Example: `0`.\n\n**Success `200`:** `{ trainers: { items, total, limit, offset } }` ordered by createdAt ascending.\n\n**Each item:**\n- `trainerProfileId` (uuid) \u2014 `trainer_profiles.id`. Pass to assign-trainer. Example: `{{trainerProfileId}}`.\n- `userId` (uuid) \u2014 Staff user id.\n- `gymOrgId` (uuid) \u2014 Gym.\n- `name` (string) \u2014 Display name. Example: `\"Owner Admin\"`.\n- `email` (string) \u2014 Email. Example: `\"owner@example.com\"`.\n- `staffCode` (string or null) \u2014 Staff lookup code. Example: `\"STAFF-AB12\"`.\n- `bio` (string or null) \u2014 Optional bio.\n- `isAdmin` (boolean) \u2014 Live gym_admins row at this gym (Admin-as-Trainer).\n- `createdAt` (string, ISO) \u2014 Profile created.\n\n**Errors:** `401` AUTHENTICATION_FAILED \u00b7 `403` GYM_ORG_ADMIN_FORBIDDEN \u00b7 `422` VALIDATION_ERROR"
+          },
+          "response": [
+            {
+              "id": "aa05c38f-80da-40a6-b75b-2fd07151553b",
+              "name": "200 OK \u2014 gym trainers",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "value": "application/json",
+                    "key": "Accept"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/trainers?limit=20&offset=0",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "trainers"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "20",
+                      "description": "Page size. Integer 1\u2013100. Default 20. Example: `20`."
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0",
+                      "description": "Skip count. Integer \u2265 0. Default 0. Example: `0`."
+                    }
+                  ]
+                },
+                "description": "**Story:** A gym admin opens the gym\u2019s trainer list to pick who to assign to a client.\n\nGET /gym-orgs/:gymOrgId/trainers \u2014 live trainer profiles at the gym (accepted Trainer invites plus Admin-as-Trainer). Use trainerProfileId on Assign Trainer. Not staff invites (those return invitedUserId, which is users.id).\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`\n\n**Query params:**\n- `limit` (optional, integer) \u2014 Page size 1\u2013100, default 20. Example: `20`.\n- `offset` (optional, integer) \u2014 Skip, default 0. Example: `0`.\n\n**Success `200`:** `{ trainers: { items, total, limit, offset } }` ordered by createdAt ascending.\n\n**Each item:**\n- `trainerProfileId` (uuid) \u2014 `trainer_profiles.id`. Pass to assign-trainer. Example: `{{trainerProfileId}}`.\n- `userId` (uuid) \u2014 Staff user id.\n- `gymOrgId` (uuid) \u2014 Gym.\n- `name` (string) \u2014 Display name. Example: `\"Owner Admin\"`.\n- `email` (string) \u2014 Email. Example: `\"owner@example.com\"`.\n- `staffCode` (string or null) \u2014 Staff lookup code. Example: `\"STAFF-AB12\"`.\n- `bio` (string or null) \u2014 Optional bio.\n- `isAdmin` (boolean) \u2014 Live gym_admins row at this gym (Admin-as-Trainer).\n- `createdAt` (string, ISO) \u2014 Profile created.\n\n**Errors:** `401` AUTHENTICATION_FAILED \u00b7 `403` GYM_ORG_ADMIN_FORBIDDEN \u00b7 `422` VALIDATION_ERROR"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "value": "application/json",
+                  "key": "Accept"
+                }
+              ],
+              "cookie": [],
+              "responseTime": null,
+              "body": "{\n  \"trainers\": {\n    \"items\": [\n      {\n        \"trainerProfileId\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n        \"userId\": \"22222222-2222-4222-8222-222222222222\",\n        \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n        \"name\": \"Owner Admin\",\n        \"email\": \"owner@example.com\",\n        \"staffCode\": \"STAFF-AB12\",\n        \"bio\": null,\n        \"isAdmin\": true,\n        \"createdAt\": \"2026-08-08T12:00:00.000Z\"\n      },\n      {\n        \"trainerProfileId\": \"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb\",\n        \"userId\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n        \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n        \"name\": \"Ada Trainer\",\n        \"email\": \"trainer@example.com\",\n        \"staffCode\": \"STAFF-T1\",\n        \"bio\": \"PT\",\n        \"isAdmin\": false,\n        \"createdAt\": \"2026-08-09T12:00:00.000Z\"\n      }\n    ],\n    \"total\": 2,\n    \"limit\": 20,\n    \"offset\": 0\n  }\n}"
+            },
+            {
+              "id": "5eebb40d-5c41-4eae-8b50-d2d45376a2b5",
+              "name": "403 \u2014 GYM_ORG_ADMIN_FORBIDDEN",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "value": "application/json",
+                    "key": "Accept"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/trainers?limit=20&offset=0",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "trainers"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "20",
+                      "description": "Page size. Integer 1\u2013100. Default 20. Example: `20`."
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0",
+                      "description": "Skip count. Integer \u2265 0. Default 0. Example: `0`."
+                    }
+                  ]
+                },
+                "description": "**Story:** A gym admin opens the gym\u2019s trainer list to pick who to assign to a client.\n\nGET /gym-orgs/:gymOrgId/trainers \u2014 live trainer profiles at the gym (accepted Trainer invites plus Admin-as-Trainer). Use trainerProfileId on Assign Trainer. Not staff invites (those return invitedUserId, which is users.id).\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`\n\n**Query params:**\n- `limit` (optional, integer) \u2014 Page size 1\u2013100, default 20. Example: `20`.\n- `offset` (optional, integer) \u2014 Skip, default 0. Example: `0`.\n\n**Success `200`:** `{ trainers: { items, total, limit, offset } }` ordered by createdAt ascending.\n\n**Each item:**\n- `trainerProfileId` (uuid) \u2014 `trainer_profiles.id`. Pass to assign-trainer. Example: `{{trainerProfileId}}`.\n- `userId` (uuid) \u2014 Staff user id.\n- `gymOrgId` (uuid) \u2014 Gym.\n- `name` (string) \u2014 Display name. Example: `\"Owner Admin\"`.\n- `email` (string) \u2014 Email. Example: `\"owner@example.com\"`.\n- `staffCode` (string or null) \u2014 Staff lookup code. Example: `\"STAFF-AB12\"`.\n- `bio` (string or null) \u2014 Optional bio.\n- `isAdmin` (boolean) \u2014 Live gym_admins row at this gym (Admin-as-Trainer).\n- `createdAt` (string, ISO) \u2014 Profile created.\n\n**Errors:** `401` AUTHENTICATION_FAILED \u00b7 `403` GYM_ORG_ADMIN_FORBIDDEN \u00b7 `422` VALIDATION_ERROR"
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "value": "application/json",
+                  "key": "Accept"
+                }
+              ],
+              "cookie": [],
+              "responseTime": null,
+              "body": "{\n  \"error\": {\n    \"code\": \"GYM_ORG_ADMIN_FORBIDDEN\",\n    \"message\": \"Not allowed to administer this gym organization\"\n  }\n}"
+            }
+          ]
         }
       ]
     },
@@ -6672,7 +6835,7 @@
                 "assign-trainer"
               ]
             },
-            "description": "**Story:** A gym admin pairs a client with a trainer so coaching can begin.\n\nPOST /gym-orgs/:gymOrgId/members/:membershipId/assign-trainer \u2014 Admin assign/reassign.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:**\n- `gymOrgId` (uuid) \u2014 Gym.\n- `membershipId` (uuid) \u2014 ACTIVE membership. Example: `{{membershipId}}`.\n\n**Request body (JSON):**\n- `trainerProfileId` (required, uuid) \u2014 Live `trainer_profiles.id` at this gym (Admin may use self). Example: `{{trainerProfileId}}`.\n\nRequires in-date `TRAINER_COACHING` ADDON on the membership (payment ignored).\n\n**Success `200`:** `{ membership }`\n\n**`member` fields:**\n- `membershipId` (uuid) \u2014 Membership id (same as `{{membershipId}}`).\n- `clientUserId` (uuid) \u2014 Client user.\n- `gymOrgId` (uuid) \u2014 Tenancy.\n- `status` (enum) \u2014 Values: `ACTIVE`, `INACTIVE`.\n- `checkInBlocked` (boolean) \u2014 Manual Admin safety valve.\n- `assignedTrainerId` (uuid or null) \u2014 `trainer_profiles.id`.\n- `clientName` / `clientEmail` (string) \u2014 From `users`.\n- `clientPhone` (string or null) \u2014 Optional contact.\n- `joinedAt` (string, ISO) \u2014 Accept time.\n- `leftAt` (string ISO or null) \u2014 Set on offboard.\n- `basePaymentStatus` (enum or null) \u2014 Values: `paid`, `unpaid`, `partial`, or `null`.\n- `baseAmountPaid` / `basePriceAmount` (number or null) \u2014 BASE line badge.\n\n**`membership` (mutation) fields:**\n- `membershipId`, `clientUserId`, `gymOrgId` (uuid)\n- `status` (enum) \u2014 Values: `ACTIVE`, `INACTIVE`.\n- `checkInBlocked` (boolean)\n- `assignedTrainerId` (uuid or null)\n- `joinedAt` / `leftAt` / `updatedAt` (ISO; `leftAt` nullable)\n\n**Errors:** `404` membership/trainer \u00b7 `422` COACHING_ADDON_REQUIRED \u00b7 CLIENT_MEMBERSHIP_INVALID_TRANSITION\n\nGuide: gym-backend `docs/roster.md`."
+            "description": "**Story:** A gym admin pairs a client with a trainer so coaching can begin.\n\nPOST /gym-orgs/:gymOrgId/members/:membershipId/assign-trainer \u2014 Admin assign/reassign. Get trainerProfileId from List Gym Trainers.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:**\n- `gymOrgId` (uuid) \u2014 Gym.\n- `membershipId` (uuid) \u2014 ACTIVE membership. Example: `{{membershipId}}`.\n\n**Request body (JSON):**\n- `trainerProfileId` (required, uuid) \u2014 Live `trainer_profiles.id` at this gym (Admin may use self). Example: `{{trainerProfileId}}`.\n\nRequires in-date `TRAINER_COACHING` ADDON on the membership (payment ignored).\n\n**Success `200`:** `{ membership }`\n\n**`member` fields:**\n- `membershipId` (uuid) \u2014 Membership id (same as `{{membershipId}}`).\n- `clientUserId` (uuid) \u2014 Client user.\n- `gymOrgId` (uuid) \u2014 Tenancy.\n- `status` (enum) \u2014 Values: `ACTIVE`, `INACTIVE`.\n- `checkInBlocked` (boolean) \u2014 Manual Admin safety valve.\n- `assignedTrainerId` (uuid or null) \u2014 `trainer_profiles.id`.\n- `clientName` / `clientEmail` (string) \u2014 From `users`.\n- `clientPhone` (string or null) \u2014 Optional contact.\n- `joinedAt` (string, ISO) \u2014 Accept time.\n- `leftAt` (string ISO or null) \u2014 Set on offboard.\n- `basePaymentStatus` (enum or null) \u2014 Values: `paid`, `unpaid`, `partial`, or `null`.\n- `baseAmountPaid` / `basePriceAmount` (number or null) \u2014 BASE line badge.\n\n**`membership` (mutation) fields:**\n- `membershipId`, `clientUserId`, `gymOrgId` (uuid)\n- `status` (enum) \u2014 Values: `ACTIVE`, `INACTIVE`.\n- `checkInBlocked` (boolean)\n- `assignedTrainerId` (uuid or null)\n- `joinedAt` / `leftAt` / `updatedAt` (ISO; `leftAt` nullable)\n\n**Errors:** `404` membership/trainer \u00b7 `422` COACHING_ADDON_REQUIRED \u00b7 CLIENT_MEMBERSHIP_INVALID_TRANSITION\n\nGuide: gym-backend `docs/roster.md`."
           },
           "response": [
             {
