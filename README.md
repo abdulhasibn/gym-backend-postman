@@ -47,6 +47,7 @@ Written guides in gym-backend (same content, markdown form):
 - [`docs/membership-invites.md`](https://github.com/abdulhasibn/gym-backend/blob/main/docs/membership-invites.md)
 - [`docs/leads.md`](https://github.com/abdulhasibn/gym-backend/blob/main/docs/leads.md)
 - [`docs/subscriptions.md`](https://github.com/abdulhasibn/gym-backend/blob/main/docs/subscriptions.md)
+- [`docs/nutrition.md`](https://github.com/abdulhasibn/gym-backend/blob/main/docs/nutrition.md)
 
 Shared error envelope:
 
@@ -87,6 +88,14 @@ Shared error envelope:
    1. Admin: **Subscriptions → List Client Subscriptions**
    2. Admin: **Update Subscription Payment** / **Override Subscription Start** (unstarted BASE)
    3. Client: **List My Subscriptions**
+
+13. Nutrition (any authenticated user + CLIENT diary):
+   1. **Nutrition → Search Foods** (stores `foodItemId`; `servingId` defaults to seed Idli piece)
+   2. Client: **Get My Calorie Log** → **Log Extra Food** (stores `calorieLogItemId`) → **Unlog Extra Food**
+   3. Staff with `CALORIES` grant: **Get Staff Client Calorie Log**
+14. Diet coaching (in-date TRAINER_COACHING addon; Admin-as-Trainer or assigned Trainer):
+   1. Staff: **Coaching → Assign Diet Plan** (stores `dietPlanItemId`) / **Get Staff Diet Plan**
+   2. Client: **Get My Diet Plan** → **Complete Diet Item** → **Uncomplete Diet Item**
 
 `baseUrl` defaults to `http://localhost:3000` (override for hosted environments).
 

@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "a442e881-b024-4178-89ad-accb66ac1d58",
     "name": "Gym Backend API",
-    "description": "Gym Backend Express API — Auth, Gym Orgs, Staff Invites, Leads, Plans, Membership Invites + DataGrants, Subscriptions, Roster, Attendance, Profile & Progress.\n\nEach request documents **every property** (body / query / response) with types, full enums, and examples. Open **Examples** for concrete JSON.\n\nMarkdown guides in gym-backend: `docs/api.md`, `docs/client-auth.md`, `docs/plans.md`, `docs/membership-invites.md`, `docs/subscriptions.md`, `docs/roster.md`, `docs/leads.md`.\n\nShared error envelope: `{ \"error\": { \"code\": string, \"message\": string } }`\nPagination: `limit` default 20 max 100; `offset` default 0; page `{ items, total, limit, offset }`.",
+    "description": "Gym Backend Express API — Auth, Gym Orgs, Staff Invites, Leads, Plans, Membership Invites + DataGrants, Subscriptions, Roster, Attendance, Profile & Progress, Nutrition, Coaching.\n\nEach request documents **every property** (body / query / response) with types, full enums, and examples. Open **Examples** for concrete JSON.\n\nMarkdown guides in gym-backend: `docs/api.md`, `docs/client-auth.md`, `docs/plans.md`, `docs/membership-invites.md`, `docs/subscriptions.md`, `docs/roster.md`, `docs/leads.md`, `docs/nutrition.md`.\n\nShared error envelope: `{ \"error\": { \"code\": string, \"message\": string } }`\nPagination: `limit` default 20 max 100; `offset` default 0; page `{ items, total, limit, offset }`.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -133,6 +133,30 @@
       "value": "",
       "type": "default",
       "description": "Live trainer_profiles.id at gym (from DB / Admin self profile)"
+    },
+    {
+      "key": "foodItemId",
+      "value": "f00d0000-0000-4000-8000-000000000001",
+      "type": "default",
+      "description": "Seed FoodItem id (Idli). Overwritten by Search Foods."
+    },
+    {
+      "key": "servingId",
+      "value": "f00d5e04-0000-4000-8000-000000010003",
+      "type": "default",
+      "description": "Seed FoodServing id (Idli piece). Used by log extra / assign diet."
+    },
+    {
+      "key": "calorieLogItemId",
+      "value": "",
+      "type": "default",
+      "description": "Set by Log Extra Food (extra item id)"
+    },
+    {
+      "key": "dietPlanItemId",
+      "value": "",
+      "type": "default",
+      "description": "Set by Assign Diet Plan / Get My Diet Plan"
     }
   ],
   "item": [
@@ -8159,6 +8183,1037 @@
               ],
               "cookie": [],
               "body": "{\n  \"error\": {\n    \"code\": \"USERS_FORBIDDEN\",\n    \"message\": \"PROGRESS grant required to view client progress\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Nutrition",
+      "description": "Seed food catalog search and Client-owned calorie diary (3.1). Guide: gym-backend `docs/nutrition.md`.",
+      "item": [
+        {
+          "name": "Search Foods",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('foods array', function () {",
+                  "  pm.expect(body).to.have.property('foods');",
+                  "  pm.expect(body.foods).to.be.an('array');",
+                  "});",
+                  "if (pm.response.code === 200 && body.foods && body.foods[0]) {",
+                  "  pm.collectionVariables.set('foodItemId', body.foods[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/foods/search?q=idli",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "foods",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "idli",
+                  "description": "Optional search string, max 120 chars. Empty returns the full seed catalog."
+                }
+              ]
+            },
+            "description": "**Story:** A client or trainer looks up a catalog food so they can log or prescribe it by serving, not by typing a name.\n\nGET /foods/search — seed catalog search (any authenticated user). Empty `q` returns the full 20-food bootstrap. CustomFood is not in this stint.\n\n**Auth:** Bearer any lane  \n**Query:**\n- `q` (optional, string, max 120) — Name / alias fragment. Example: `\"idli\"`. Default empty string = full seed list.\n\n**Success `200`:** `{ foods: FoodSearch[] }`\n\n**`foods[]` fields:**\n- `id` (uuid) — FoodItem id. Example: `\"f00d0000-0000-4000-8000-000000000001\"`.\n- `name` (string) — Catalog name. Example: `\"Idli\"`.\n- `aliases` (string[]) — Search aliases. Example: `[\"idly\"]`.\n- `caloriesPer100g` / `proteinGPer100g` / `carbsGPer100g` / `fatGPer100g` (number) — Typical-cook macros per 100 g.\n- `defaultUnit` (enum) — Values: `G`, `ML`, `PIECE`, `KATORI`, `CUP`, `GLASS`, `TBSP`, `TSP`.\n- `units[]` — Same 8 units on every food.\n  - `unit` (enum) — Frozen key. Same values as `defaultUnit`.\n  - `label` (string) — Display label. Example: `\"piece\"`.\n  - `grams` (number) — Grams for one serving of that unit.\n  - `calories` / `proteinG` / `carbsG` / `fatG` (number) — Scaled macros for qty 1 of that serving.\n  - `isDefault` (boolean) — True for `defaultUnit`.\n\n**Note:** Search DTO `units[]` does not include serving `id`. Use the default unit then copy `servingId` from a diary/plan response, or from `GET` after assign. Collection vars `foodItemId` / `servingId` default to seed Idli piece.\n\n**Errors:** `401` AUTHENTICATION_FAILED · `422` VALIDATION_ERROR  \nGuide: gym-backend `docs/nutrition.md`."
+          },
+          "response": [
+            {
+              "name": "200 OK — seed foods",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/foods/search?q=idli",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "foods",
+                    "search"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"foods\": [\n    {\n      \"id\": \"f00d0000-0000-4000-8000-000000000001\",\n      \"name\": \"Idli\",\n      \"aliases\": [\n        \"idly\"\n      ],\n      \"caloriesPer100g\": 135,\n      \"proteinGPer100g\": 4,\n      \"carbsGPer100g\": 27,\n      \"fatGPer100g\": 0.5,\n      \"defaultUnit\": \"PIECE\",\n      \"units\": [\n        {\n          \"unit\": \"G\",\n          \"label\": \"g\",\n          \"grams\": 1,\n          \"calories\": 1.35,\n          \"proteinG\": 0.04,\n          \"carbsG\": 0.27,\n          \"fatG\": 0.01,\n          \"isDefault\": false\n        },\n        {\n          \"unit\": \"ML\",\n          \"label\": \"ml\",\n          \"grams\": 1,\n          \"calories\": 1.35,\n          \"proteinG\": 0.04,\n          \"carbsG\": 0.27,\n          \"fatG\": 0.01,\n          \"isDefault\": false\n        },\n        {\n          \"unit\": \"PIECE\",\n          \"label\": \"piece\",\n          \"grams\": 30,\n          \"calories\": 40.5,\n          \"proteinG\": 1.2,\n          \"carbsG\": 8.1,\n          \"fatG\": 0.15,\n          \"isDefault\": true\n        },\n        {\n          \"unit\": \"KATORI\",\n          \"label\": \"katori\",\n          \"grams\": 150,\n          \"calories\": 202.5,\n          \"proteinG\": 6,\n          \"carbsG\": 40.5,\n          \"fatG\": 0.75,\n          \"isDefault\": false\n        },\n        {\n          \"unit\": \"CUP\",\n          \"label\": \"cup\",\n          \"grams\": 240,\n          \"calories\": 324,\n          \"proteinG\": 9.6,\n          \"carbsG\": 64.8,\n          \"fatG\": 1.2,\n          \"isDefault\": false\n        },\n        {\n          \"unit\": \"GLASS\",\n          \"label\": \"glass\",\n          \"grams\": 200,\n          \"calories\": 270,\n          \"proteinG\": 8,\n          \"carbsG\": 54,\n          \"fatG\": 1,\n          \"isDefault\": false\n        },\n        {\n          \"unit\": \"TBSP\",\n          \"label\": \"tbsp\",\n          \"grams\": 15,\n          \"calories\": 20.25,\n          \"proteinG\": 0.6,\n          \"carbsG\": 4.05,\n          \"fatG\": 0.08,\n          \"isDefault\": false\n        },\n        {\n          \"unit\": \"TSP\",\n          \"label\": \"tsp\",\n          \"grams\": 5,\n          \"calories\": 6.75,\n          \"proteinG\": 0.2,\n          \"carbsG\": 1.35,\n          \"fatG\": 0.03,\n          \"isDefault\": false\n        }\n      ]\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get My Calorie Log",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('calorieLog present', function () {",
+                  "  pm.expect(body).to.have.property('calorieLog');",
+                  "  pm.expect(body.calorieLog).to.have.property('slots');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/calorie-logs?date=2026-08-17",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "calorie-logs"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-08-17",
+                  "description": "Optional YYYY-MM-DD. Default: today in Asia/Kolkata."
+                }
+              ]
+            },
+            "description": "**Story:** A client opens today’s food diary to see calories and macros by meal.\n\nGET /me/calorie-logs — Client own diary for a calendar day (C9).\n\n**Auth:** Bearer CLIENT  \n**Query:**\n- `date` (optional, string `YYYY-MM-DD`) — Diary day. Default: today in Asia/Kolkata. Example: `\"2026-08-17\"`.\n\n**Success `200`:** `{ calorieLog }` — empty day still returns zeros and five empty slots.\n\n**`calorieLog` fields:**\n- `logDate` (string `YYYY-MM-DD`)\n- `totalCalories` / `totalProteinG` / `totalCarbsG` / `totalFatG` (number) — Day totals.\n- `slots[]` — Always all five meal windows.\n  - `mealSlot` (enum) — Values: `BREAKFAST`, `MORNING_SNACK`, `LUNCH`, `EVENING_SNACK`, `DINNER`.\n  - `totalCalories` / `totalProteinG` / `totalCarbsG` / `totalFatG` (number)\n  - `items[]`:\n    - `id` (uuid) — CalorieLogItem id.\n    - `foodItemId` / `servingId` (uuid)\n    - `quantity` (number) — Serving multiplier, 0–100 exclusive of 0, max 2 decimals.\n    - `mealSlot` (enum) — Same values as slot.\n    - `dietPlanMealItemId` (uuid or null) — Set when this line came from completing a diet item.\n    - `calories` / `proteinG` / `carbsG` / `fatG` (number) — Snapshotted at write.\n    - `isExtra` (boolean) — True when `dietPlanMealItemId` is null.\n\n**Errors:** `403` NUTRITION_FORBIDDEN · `422` VALIDATION_ERROR  \nGuide: gym-backend `docs/nutrition.md`."
+          },
+          "response": [
+            {
+              "name": "200 OK — day diary",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/me/calorie-logs?date=2026-08-17",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "me",
+                    "calorie-logs"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"calorieLog\": {\n    \"logDate\": \"2026-08-17\",\n    \"totalCalories\": 81,\n    \"totalProteinG\": 2.4,\n    \"totalCarbsG\": 16.2,\n    \"totalFatG\": 0.3,\n    \"slots\": [\n      {\n        \"mealSlot\": \"BREAKFAST\",\n        \"totalCalories\": 81,\n        \"totalProteinG\": 2.4,\n        \"totalCarbsG\": 16.2,\n        \"totalFatG\": 0.3,\n        \"items\": [\n          {\n            \"id\": \"c1111111-1111-4111-8111-111111111111\",\n            \"foodItemId\": \"f00d0000-0000-4000-8000-000000000001\",\n            \"servingId\": \"f00d5e04-0000-4000-8000-000000010003\",\n            \"quantity\": 2,\n            \"mealSlot\": \"BREAKFAST\",\n            \"dietPlanMealItemId\": null,\n            \"calories\": 81,\n            \"proteinG\": 2.4,\n            \"carbsG\": 16.2,\n            \"fatG\": 0.3,\n            \"isExtra\": true\n          }\n        ]\n      },\n      {\n        \"mealSlot\": \"MORNING_SNACK\",\n        \"totalCalories\": 0,\n        \"totalProteinG\": 0,\n        \"totalCarbsG\": 0,\n        \"totalFatG\": 0,\n        \"items\": []\n      },\n      {\n        \"mealSlot\": \"LUNCH\",\n        \"totalCalories\": 0,\n        \"totalProteinG\": 0,\n        \"totalCarbsG\": 0,\n        \"totalFatG\": 0,\n        \"items\": []\n      },\n      {\n        \"mealSlot\": \"EVENING_SNACK\",\n        \"totalCalories\": 0,\n        \"totalProteinG\": 0,\n        \"totalCarbsG\": 0,\n        \"totalFatG\": 0,\n        \"items\": []\n      },\n      {\n        \"mealSlot\": \"DINNER\",\n        \"totalCalories\": 0,\n        \"totalProteinG\": 0,\n        \"totalCarbsG\": 0,\n        \"totalFatG\": 0,\n        \"items\": []\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Log Extra Food",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (pm.response.code === 201 && body.calorieLog) {",
+                  "  for (const slot of body.calorieLog.slots || []) {",
+                  "    const extra = (slot.items || []).find(i => i.isExtra);",
+                  "    if (extra && extra.id) {",
+                  "      pm.collectionVariables.set('calorieLogItemId', extra.id);",
+                  "      break;",
+                  "    }",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/calorie-logs/items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "calorie-logs",
+                "items"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"foodItemId\": \"{{foodItemId}}\",\n  \"servingId\": \"{{servingId}}\",\n  \"quantity\": 2,\n  \"mealSlot\": \"BREAKFAST\",\n  \"logDate\": \"2026-08-17\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Story:** A client logs food they ate that was not on today’s diet plan.\n\nPOST /me/calorie-logs/items — log extra (off-plan) catalog food onto a meal slot.\n\n**Auth:** Bearer CLIENT\n\n**Request body (JSON):**\n- `foodItemId` (required, uuid) — Seed FoodItem. Example: `{{foodItemId}}`.\n- `servingId` (required, uuid) — Serving that belongs to that food. Example: `{{servingId}}`.\n- `quantity` (required, number) — Serving multiplier, greater than 0 and at most 100. Example: `2`.\n- `mealSlot` (required, enum) — Values: `BREAKFAST`, `MORNING_SNACK`, `LUNCH`, `EVENING_SNACK`, `DINNER`. Example: `\"BREAKFAST\"`.\n- `logDate` (optional, string `YYYY-MM-DD`) — Diary day. Default: today in Asia/Kolkata.\n\nMacros are snapshotted at write. Non-seed ids → **404** `NOT_FOUND`.\n\n**Success `201`:** `{ calorieLog }` (same shape as Get My Calorie Log)  \n**Errors:** `403` NUTRITION_FORBIDDEN · `404` NOT_FOUND · `422` VALIDATION_ERROR  \nGuide: gym-backend `docs/nutrition.md`."
+          },
+          "response": [
+            {
+              "name": "201 Created — extra logged",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/me/calorie-logs/items",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "me",
+                    "calorie-logs",
+                    "items"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"foodItemId\": \"{{foodItemId}}\",\n  \"servingId\": \"{{servingId}}\",\n  \"quantity\": 2,\n  \"mealSlot\": \"BREAKFAST\",\n  \"logDate\": \"2026-08-17\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"calorieLog\": {\n    \"logDate\": \"2026-08-17\",\n    \"totalCalories\": 81,\n    \"totalProteinG\": 2.4,\n    \"totalCarbsG\": 16.2,\n    \"totalFatG\": 0.3,\n    \"slots\": [\n      {\n        \"mealSlot\": \"BREAKFAST\",\n        \"totalCalories\": 81,\n        \"totalProteinG\": 2.4,\n        \"totalCarbsG\": 16.2,\n        \"totalFatG\": 0.3,\n        \"items\": [\n          {\n            \"id\": \"c1111111-1111-4111-8111-111111111111\",\n            \"foodItemId\": \"f00d0000-0000-4000-8000-000000000001\",\n            \"servingId\": \"f00d5e04-0000-4000-8000-000000010003\",\n            \"quantity\": 2,\n            \"mealSlot\": \"BREAKFAST\",\n            \"dietPlanMealItemId\": null,\n            \"calories\": 81,\n            \"proteinG\": 2.4,\n            \"carbsG\": 16.2,\n            \"fatG\": 0.3,\n            \"isExtra\": true\n          }\n        ]\n      },\n      {\n        \"mealSlot\": \"MORNING_SNACK\",\n        \"totalCalories\": 0,\n        \"totalProteinG\": 0,\n        \"totalCarbsG\": 0,\n        \"totalFatG\": 0,\n        \"items\": []\n      },\n      {\n        \"mealSlot\": \"LUNCH\",\n        \"totalCalories\": 0,\n        \"totalProteinG\": 0,\n        \"totalCarbsG\": 0,\n        \"totalFatG\": 0,\n        \"items\": []\n      },\n      {\n        \"mealSlot\": \"EVENING_SNACK\",\n        \"totalCalories\": 0,\n        \"totalProteinG\": 0,\n        \"totalCarbsG\": 0,\n        \"totalFatG\": 0,\n        \"items\": []\n      },\n      {\n        \"mealSlot\": \"DINNER\",\n        \"totalCalories\": 0,\n        \"totalProteinG\": 0,\n        \"totalCarbsG\": 0,\n        \"totalFatG\": 0,\n        \"items\": []\n      }\n    ]\n  }\n}"
+            },
+            {
+              "name": "404 — NOT_FOUND",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/me/calorie-logs/items",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "me",
+                    "calorie-logs",
+                    "items"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"foodItemId\": \"00000000-0000-4000-8000-000000000000\",\n  \"servingId\": \"f00d5e04-0000-4000-8000-000000010003\",\n  \"quantity\": 1,\n  \"mealSlot\": \"LUNCH\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"Seed catalog food or serving not found\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Unlog Extra Food",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/calorie-logs/items/{{calorieLogItemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "calorie-logs",
+                "items",
+                "{{calorieLogItemId}}"
+              ]
+            },
+            "description": "**Story:** A client removes an extra food they accidentally logged.\n\nDELETE /me/calorie-logs/items/:itemId — soft-delete an extra diary line.\n\n**Auth:** Bearer CLIENT  \n**Path:**\n- `itemId` (uuid) — CalorieLogItem id. Example: `{{calorieLogItemId}}`.\n\nPlan-linked (prescribed) rows cannot be deleted here — use Uncomplete Diet Item.\n\n**Success `200`:** `{ calorieLog }`  \n**Errors:** `403` NUTRITION_FORBIDDEN · `404` NOT_FOUND · `422` INVALID_NUTRITION  \nGuide: gym-backend `docs/nutrition.md`."
+          },
+          "response": [
+            {
+              "name": "200 OK — extra removed",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/me/calorie-logs/items/{{calorieLogItemId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "me",
+                    "calorie-logs",
+                    "items",
+                    "{{calorieLogItemId}}"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"calorieLog\": {\n    \"logDate\": \"2026-08-17\",\n    \"totalCalories\": 0,\n    \"totalProteinG\": 0,\n    \"totalCarbsG\": 0,\n    \"totalFatG\": 0,\n    \"slots\": [\n      {\n        \"mealSlot\": \"BREAKFAST\",\n        \"totalCalories\": 0,\n        \"totalProteinG\": 0,\n        \"totalCarbsG\": 0,\n        \"totalFatG\": 0,\n        \"items\": []\n      },\n      {\n        \"mealSlot\": \"MORNING_SNACK\",\n        \"totalCalories\": 0,\n        \"totalProteinG\": 0,\n        \"totalCarbsG\": 0,\n        \"totalFatG\": 0,\n        \"items\": []\n      },\n      {\n        \"mealSlot\": \"LUNCH\",\n        \"totalCalories\": 0,\n        \"totalProteinG\": 0,\n        \"totalCarbsG\": 0,\n        \"totalFatG\": 0,\n        \"items\": []\n      },\n      {\n        \"mealSlot\": \"EVENING_SNACK\",\n        \"totalCalories\": 0,\n        \"totalProteinG\": 0,\n        \"totalCarbsG\": 0,\n        \"totalFatG\": 0,\n        \"items\": []\n      },\n      {\n        \"mealSlot\": \"DINNER\",\n        \"totalCalories\": 0,\n        \"totalProteinG\": 0,\n        \"totalCarbsG\": 0,\n        \"totalFatG\": 0,\n        \"items\": []\n      }\n    ]\n  }\n}"
+            },
+            {
+              "name": "422 — INVALID_NUTRITION",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/me/calorie-logs/items/{{calorieLogItemId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "me",
+                    "calorie-logs",
+                    "items",
+                    "{{calorieLogItemId}}"
+                  ]
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"INVALID_NUTRITION\",\n    \"message\": \"Plan-linked items must be uncompleted on the diet plan\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Staff Client Calorie Log",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/clients/{{clientUserId}}/calorie-logs?date=2026-08-17",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "clients",
+                "{{clientUserId}}",
+                "calorie-logs"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-08-17",
+                  "description": "Optional YYYY-MM-DD. Default: today in Asia/Kolkata."
+                }
+              ]
+            },
+            "description": "**Story:** A trainer or admin who has calorie consent opens a client’s food diary for a day.\n\nGET /gym-orgs/:gymOrgId/clients/:clientUserId/calorie-logs — staff diary read.\n\n**Auth:** Bearer ADMIN or TRAINER live at gym **and** live `CALORIES` class grant  \n**Path:**\n- `gymOrgId` (uuid) — Gym. Example: `{{gymOrgId}}`.\n- `clientUserId` (uuid) — Client. Example: `{{clientUserId}}`.\n\n**Query:**\n- `date` (optional, string `YYYY-MM-DD`) — Diary day. Default: today in Asia/Kolkata.\n\n**Success `200`:** `{ calorieLog }` (same shape as Get My Calorie Log)  \n**Errors:** `403` NUTRITION_FORBIDDEN · `422` VALIDATION_ERROR  \nGuide: gym-backend `docs/nutrition.md`."
+          },
+          "response": [
+            {
+              "name": "200 OK — staff diary",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/clients/{{clientUserId}}/calorie-logs",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "clients",
+                    "{{clientUserId}}",
+                    "calorie-logs"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"calorieLog\": {\n    \"logDate\": \"2026-08-17\",\n    \"totalCalories\": 81,\n    \"totalProteinG\": 2.4,\n    \"totalCarbsG\": 16.2,\n    \"totalFatG\": 0.3,\n    \"slots\": [\n      {\n        \"mealSlot\": \"BREAKFAST\",\n        \"totalCalories\": 81,\n        \"totalProteinG\": 2.4,\n        \"totalCarbsG\": 16.2,\n        \"totalFatG\": 0.3,\n        \"items\": [\n          {\n            \"id\": \"c1111111-1111-4111-8111-111111111111\",\n            \"foodItemId\": \"f00d0000-0000-4000-8000-000000000001\",\n            \"servingId\": \"f00d5e04-0000-4000-8000-000000010003\",\n            \"quantity\": 2,\n            \"mealSlot\": \"BREAKFAST\",\n            \"dietPlanMealItemId\": null,\n            \"calories\": 81,\n            \"proteinG\": 2.4,\n            \"carbsG\": 16.2,\n            \"fatG\": 0.3,\n            \"isExtra\": true\n          }\n        ]\n      },\n      {\n        \"mealSlot\": \"MORNING_SNACK\",\n        \"totalCalories\": 0,\n        \"totalProteinG\": 0,\n        \"totalCarbsG\": 0,\n        \"totalFatG\": 0,\n        \"items\": []\n      },\n      {\n        \"mealSlot\": \"LUNCH\",\n        \"totalCalories\": 0,\n        \"totalProteinG\": 0,\n        \"totalCarbsG\": 0,\n        \"totalFatG\": 0,\n        \"items\": []\n      },\n      {\n        \"mealSlot\": \"EVENING_SNACK\",\n        \"totalCalories\": 0,\n        \"totalProteinG\": 0,\n        \"totalCarbsG\": 0,\n        \"totalFatG\": 0,\n        \"items\": []\n      },\n      {\n        \"mealSlot\": \"DINNER\",\n        \"totalCalories\": 0,\n        \"totalProteinG\": 0,\n        \"totalCarbsG\": 0,\n        \"totalFatG\": 0,\n        \"items\": []\n      }\n    ]\n  }\n}"
+            },
+            {
+              "name": "403 — NUTRITION_FORBIDDEN",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/clients/{{clientUserId}}/calorie-logs",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "clients",
+                    "{{clientUserId}}",
+                    "calorie-logs"
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"NUTRITION_FORBIDDEN\",\n    \"message\": \"CALORIES grant required to view client diary\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Coaching",
+      "description": "Diet plan assign / complete (3.1). Workout assign is 3.2. Guide: gym-backend `docs/nutrition.md`.",
+      "item": [
+        {
+          "name": "Assign Diet Plan",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (pm.response.code === 201 && body.dietPlan) {",
+                  "  const meals = body.dietPlan.meals || [];",
+                  "  const first = meals[0] && meals[0].items && meals[0].items[0];",
+                  "  if (first && first.id) {",
+                  "    pm.collectionVariables.set('dietPlanItemId', first.id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/clients/{{clientUserId}}/diet-plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "clients",
+                "{{clientUserId}}",
+                "diet-plans"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Cut week\",\n  \"notes\": null,\n  \"meals\": [\n    {\n      \"mealSlot\": \"BREAKFAST\",\n      \"items\": [\n        {\n          \"foodItemId\": \"{{foodItemId}}\",\n          \"servingId\": \"{{servingId}}\",\n          \"quantity\": 2\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Story:** A trainer (or admin acting as trainer) assigns a structured diet so the client knows what to eat.\n\nPOST /gym-orgs/:gymOrgId/clients/:clientUserId/diet-plans — assign catalog meals. Archives the prior ACTIVE plan for that (client, gym). `DIET_PLANS` grant is **not** required to author.\n\n**Auth:** Bearer TRAINER (assigned) or ADMIN-as-Trainer at gym; client must have in-date `TRAINER_COACHING` addon  \n**Path:** `gymOrgId`, `clientUserId`\n\n**Request body (JSON):**\n- `title` (required, string) — 1–120 chars after trim. Example: `\"Cut week\"`.\n- `notes` (optional, string or null) — Free-text, max 5000. Example: `null`.\n- `meals` (required, array, min 1) — Unique `mealSlot` per meal; each meal needs ≥1 item.\n  - `mealSlot` (required, enum) — Values: `BREAKFAST`, `MORNING_SNACK`, `LUNCH`, `EVENING_SNACK`, `DINNER`.\n  - `items[]`:\n    - `foodItemId` (required, uuid) — Seed FoodItem.\n    - `servingId` (required, uuid) — Serving on that food.\n    - `quantity` (required, number) — Serving multiplier, greater than 0 and at most 100.\n\n**Success `201`:** `{ dietPlan }`  \n**`dietPlan` fields:**\n- `id` (uuid)\n- `clientUserId` / `trainerId` / `gymOrgId` (uuid) — `gymOrgId` is assigning-gym provenance.\n- `title` (string)\n- `notes` (string or null)\n- `status` (enum) — Values: `ACTIVE`, `ARCHIVED`.\n- `writable` (boolean) — True when coaching addon is in date.\n- `logDate` (string `YYYY-MM-DD` or null)\n- `meals[]` — `id`, `mealSlot`, `items[]` (`id`, `foodItemId`, `servingId`, `quantity`, `mealSlot`; `logged` omitted on assign).\n- `createdAt` / `updatedAt` (ISO timestamptz)\n\n**Errors:** `403` COACHING_FORBIDDEN · `404` NOT_FOUND · `409` COACHING_ADDON_REQUIRED · `422` INVALID_DIET_PLAN / VALIDATION_ERROR  \nGuide: gym-backend `docs/nutrition.md`."
+          },
+          "response": [
+            {
+              "name": "201 Created — diet assigned",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/clients/{{clientUserId}}/diet-plans",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "clients",
+                    "{{clientUserId}}",
+                    "diet-plans"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Cut week\",\n  \"notes\": null,\n  \"meals\": [\n    {\n      \"mealSlot\": \"BREAKFAST\",\n      \"items\": [\n        {\n          \"foodItemId\": \"{{foodItemId}}\",\n          \"servingId\": \"{{servingId}}\",\n          \"quantity\": 2\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"dietPlan\": {\n    \"id\": \"e1111111-1111-4111-8111-111111111111\",\n    \"clientUserId\": \"22222222-2222-4222-8222-222222222222\",\n    \"trainerId\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"title\": \"Cut week\",\n    \"notes\": null,\n    \"status\": \"ACTIVE\",\n    \"writable\": true,\n    \"logDate\": null,\n    \"meals\": [\n      {\n        \"id\": \"e2222222-2222-4222-8222-222222222222\",\n        \"mealSlot\": \"BREAKFAST\",\n        \"items\": [\n          {\n            \"id\": \"d1111111-1111-4111-8111-111111111111\",\n            \"foodItemId\": \"f00d0000-0000-4000-8000-000000000001\",\n            \"servingId\": \"f00d5e04-0000-4000-8000-000000010003\",\n            \"quantity\": 2,\n            \"mealSlot\": \"BREAKFAST\"\n          }\n        ]\n      }\n    ],\n    \"createdAt\": \"2026-08-17T04:00:00.000Z\",\n    \"updatedAt\": \"2026-08-17T04:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "409 — COACHING_ADDON_REQUIRED",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/clients/{{clientUserId}}/diet-plans",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "clients",
+                    "{{clientUserId}}",
+                    "diet-plans"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Cut week\",\n  \"notes\": null,\n  \"meals\": [\n    {\n      \"mealSlot\": \"BREAKFAST\",\n      \"items\": [\n        {\n          \"foodItemId\": \"{{foodItemId}}\",\n          \"servingId\": \"{{servingId}}\",\n          \"quantity\": 2\n        }\n      ]\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"COACHING_ADDON_REQUIRED\",\n    \"message\": \"An in-date TRAINER_COACHING addon is required for diet plan changes\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Staff Diet Plan",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/clients/{{clientUserId}}/diet-plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "clients",
+                "{{clientUserId}}",
+                "diet-plans"
+              ]
+            },
+            "description": "**Story:** A trainer opens the diet they assigned so they can check the meal list.\n\nGET /gym-orgs/:gymOrgId/clients/:clientUserId/diet-plans — staff definition (no `logged` flags).\n\n**Auth:** Bearer TRAINER (assigned) or ADMIN-as-Trainer. `DIET_PLANS` grant is not required for definition.  \n**Path:** `gymOrgId`, `clientUserId`\n\n**Success `200`:** `{ dietPlan }` — `dietPlan` may be `null` when none is ACTIVE. `writable` is false on this staff read.  \n**Errors:** `403` COACHING_FORBIDDEN · `404` NOT_FOUND  \nGuide: gym-backend `docs/nutrition.md`."
+          },
+          "response": [
+            {
+              "name": "200 OK — definition",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/clients/{{clientUserId}}/diet-plans",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "clients",
+                    "{{clientUserId}}",
+                    "diet-plans"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"dietPlan\": {\n    \"id\": \"e1111111-1111-4111-8111-111111111111\",\n    \"clientUserId\": \"22222222-2222-4222-8222-222222222222\",\n    \"trainerId\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"title\": \"Cut week\",\n    \"notes\": null,\n    \"status\": \"ACTIVE\",\n    \"writable\": false,\n    \"logDate\": null,\n    \"meals\": [\n      {\n        \"id\": \"e2222222-2222-4222-8222-222222222222\",\n        \"mealSlot\": \"BREAKFAST\",\n        \"items\": [\n          {\n            \"id\": \"d1111111-1111-4111-8111-111111111111\",\n            \"foodItemId\": \"f00d0000-0000-4000-8000-000000000001\",\n            \"servingId\": \"f00d5e04-0000-4000-8000-000000010003\",\n            \"quantity\": 2,\n            \"mealSlot\": \"BREAKFAST\"\n          }\n        ]\n      }\n    ],\n    \"createdAt\": \"2026-08-17T04:00:00.000Z\",\n    \"updatedAt\": \"2026-08-17T04:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get My Diet Plan",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (pm.response.code === 200 && body.dietPlan) {",
+                  "  const meals = body.dietPlan.meals || [];",
+                  "  const first = meals[0] && meals[0].items && meals[0].items[0];",
+                  "  if (first && first.id) {",
+                  "    pm.collectionVariables.set('dietPlanItemId', first.id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/my-diet-plan",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "my-diet-plan"
+              ]
+            },
+            "description": "**Story:** A client opens the diet their trainer assigned and sees which items are already logged today.\n\nGET /gym-orgs/:gymOrgId/my-diet-plan — client plan plus today’s `logged` flags (gym timezone).\n\n**Auth:** Bearer CLIENT with ACTIVE membership at gym  \n**Path:** `gymOrgId`\n\n`writable` is false after addon expiry (history still returned). `dietPlan` may be `null`.\n\n**Success `200`:** `{ dietPlan }` — items include `logged` (boolean) for gym-local today.  \n**Errors:** `403` COACHING_FORBIDDEN  \nGuide: gym-backend `docs/nutrition.md`."
+          },
+          "response": [
+            {
+              "name": "200 OK — my plan",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/my-diet-plan",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "my-diet-plan"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"dietPlan\": {\n    \"id\": \"e1111111-1111-4111-8111-111111111111\",\n    \"clientUserId\": \"22222222-2222-4222-8222-222222222222\",\n    \"trainerId\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"title\": \"Cut week\",\n    \"notes\": null,\n    \"status\": \"ACTIVE\",\n    \"writable\": true,\n    \"logDate\": \"2026-08-17\",\n    \"meals\": [\n      {\n        \"id\": \"e2222222-2222-4222-8222-222222222222\",\n        \"mealSlot\": \"BREAKFAST\",\n        \"items\": [\n          {\n            \"id\": \"d1111111-1111-4111-8111-111111111111\",\n            \"foodItemId\": \"f00d0000-0000-4000-8000-000000000001\",\n            \"servingId\": \"f00d5e04-0000-4000-8000-000000010003\",\n            \"quantity\": 2,\n            \"mealSlot\": \"BREAKFAST\",\n            \"logged\": false\n          }\n        ]\n      }\n    ],\n    \"createdAt\": \"2026-08-17T04:00:00.000Z\",\n    \"updatedAt\": \"2026-08-17T04:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Complete Diet Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/my-diet-plan/items/{{dietPlanItemId}}/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "my-diet-plan",
+                "items",
+                "{{dietPlanItemId}}",
+                "complete"
+              ]
+            },
+            "description": "**Story:** A client ticks a prescribed food as eaten so it appears on today’s diary.\n\nPOST /gym-orgs/:gymOrgId/my-diet-plan/items/:itemId/complete — writes a plan-linked CalorieLogItem for gym-local today.\n\n**Auth:** Bearer CLIENT  \n**Path:**\n- `gymOrgId` (uuid)\n- `itemId` (uuid) — DietPlan meal item id. Example: `{{dietPlanItemId}}`.\n\nSecond complete the same day → **409** `ALREADY_LOGGED_PRESCRIBED`. Expired addon → **409** `COACHING_ADDON_REQUIRED`.\n\n**Success `204`:** empty body  \n**Errors:** `403` COACHING_FORBIDDEN · `404` NOT_FOUND · `409` ALREADY_LOGGED_PRESCRIBED / COACHING_ADDON_REQUIRED  \nGuide: gym-backend `docs/nutrition.md`."
+          },
+          "response": [
+            {
+              "name": "204 No Content — completed",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/my-diet-plan/items/{{dietPlanItemId}}/complete",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "my-diet-plan",
+                    "items",
+                    "{{dietPlanItemId}}",
+                    "complete"
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "cookie": [],
+              "body": ""
+            },
+            {
+              "name": "409 — ALREADY_LOGGED_PRESCRIBED",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/my-diet-plan/items/{{dietPlanItemId}}/complete",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "my-diet-plan",
+                    "items",
+                    "{{dietPlanItemId}}",
+                    "complete"
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"ALREADY_LOGGED_PRESCRIBED\",\n    \"message\": \"This diet plan item is already logged for the day\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Uncomplete Diet Item",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/my-diet-plan/items/{{dietPlanItemId}}/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "my-diet-plan",
+                "items",
+                "{{dietPlanItemId}}",
+                "complete"
+              ]
+            },
+            "description": "**Story:** A client unticks a prescribed food they marked eaten by mistake.\n\nDELETE /gym-orgs/:gymOrgId/my-diet-plan/items/:itemId/complete — removes today’s plan-linked diary row.\n\n**Auth:** Bearer CLIENT  \n**Path:** `gymOrgId`, `itemId` (`{{dietPlanItemId}}`)\n\n**Success `204`:** empty body  \n**Errors:** `403` COACHING_FORBIDDEN · `404` NOT_FOUND · `409` COACHING_ADDON_REQUIRED  \nGuide: gym-backend `docs/nutrition.md`."
+          },
+          "response": [
+            {
+              "name": "204 No Content — uncompleted",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/my-diet-plan/items/{{dietPlanItemId}}/complete",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "my-diet-plan",
+                    "items",
+                    "{{dietPlanItemId}}",
+                    "complete"
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "cookie": [],
+              "body": ""
             }
           ]
         }
