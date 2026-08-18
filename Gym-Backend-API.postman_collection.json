@@ -10743,6 +10743,803 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Health Sync",
+      "description": "Client-owned wearable connect/disconnect, metrics ingest, staff WEARABLES grant read (3.3). Guide: gym-backend `docs/health-sync.md`.",
+      "item": [
+        {
+          "name": "List My Wearable Connections",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status ok\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/wearable-connections",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "wearable-connections"
+              ]
+            },
+            "description": "**Story:** A client sees which health apps are connected and when they last synced.\n\nGET /me/wearable-connections — CLIENT lane only.\n\n**200:** `{ connections: WearableConnection[] }`",
+            "body": {
+              "mode": "raw"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"connections\": [\n    {\n      \"id\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n      \"provider\": \"HEALTH_CONNECT\",\n      \"lastSyncedAt\": \"2026-08-18T04:00:00.000Z\",\n      \"active\": true,\n      \"createdAt\": \"2026-08-18T04:00:00.000Z\"\n    }\n  ]\n}",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/me/wearable-metrics",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "me",
+                    "wearable-metrics"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Connect Wearable",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status ok\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/wearable-connections",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "wearable-connections"
+              ]
+            },
+            "description": "**Story:** A client links Health Connect (or Apple Health / Samsung Health) before pushing daily metrics.\n\nPOST /me/wearable-connections\n\n**Body:**\n- `provider` (enum): `APPLE_HEALTH` | `HEALTH_CONNECT` | `SAMSUNG_HEALTH`\n- `authRef` (object|null, optional) — prefer null for device push\n\n**201:** `{ connection }` · **409** duplicate live connection",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"HEALTH_CONNECT\",\n  \"authRef\": null\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"provider\":\"HEALTH_CONNECT\"}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/me/wearable-connections",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "me",
+                    "wearable-connections"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\"connection\":{\"id\":\"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\"provider\":\"HEALTH_CONNECT\",\"lastSyncedAt\":null,\"active\":true,\"createdAt\":\"2026-08-18T04:00:00.000Z\"}}"
+            },
+            {
+              "name": "409 Conflict — duplicate connection",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/me/wearable-connections",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "me",
+                    "wearable-connections"
+                  ]
+                },
+                "description": "**Story:** A client links Health Connect (or Apple Health / Samsung Health) before pushing daily metrics.\n\nPOST /me/wearable-connections\n\n**Body:**\n- `provider` (enum): `APPLE_HEALTH` | `HEALTH_CONNECT` | `SAMSUNG_HEALTH`\n- `authRef` (object|null, optional) — prefer null for device push\n\n**201:** `{ connection }` · **409** duplicate live connection",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"provider\": \"HEALTH_CONNECT\",\n  \"authRef\": null\n}"
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\"error\":{\"code\":\"UNIQUE_VIOLATION\",\"message\":\"wearable connection already exists\"}}"
+            }
+          ]
+        },
+        {
+          "name": "Sync Wearable Metrics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status ok\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/wearable-metrics/sync",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "wearable-metrics",
+                "sync"
+              ]
+            },
+            "description": "**Story:** The mobile app pushes normalized daily metrics after reading Health Connect locally.\n\nPOST /me/wearable-metrics/sync — requires live connection.\n\n**Body:**\n- `provider` (enum)\n- `days[]` — each day needs at least one metric field\n\n**200:** `{ syncedDays, lastSyncedAt }`",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"HEALTH_CONNECT\",\n  \"days\": [\n    {\n      \"metricOn\": \"2026-08-18\",\n      \"steps\": 8420,\n      \"activeKcal\": 410.5,\n      \"workoutMinutes\": 45,\n      \"weightKg\": 72.3\n    }\n  ]\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — synced",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/me/wearable-metrics/sync",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "me",
+                    "wearable-metrics",
+                    "sync"
+                  ]
+                },
+                "description": "**Story:** The mobile app pushes normalized daily metrics after reading Health Connect locally.\n\nPOST /me/wearable-metrics/sync — requires live connection.\n\n**Body:**\n- `provider` (enum)\n- `days[]` — each day needs at least one metric field\n\n**200:** `{ syncedDays, lastSyncedAt }`",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"provider\": \"HEALTH_CONNECT\",\n  \"days\": [\n    {\n      \"metricOn\": \"2026-08-18\",\n      \"steps\": 8420,\n      \"activeKcal\": 410.5,\n      \"workoutMinutes\": 45,\n      \"weightKg\": 72.3\n    }\n  ]\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\"syncedDays\":1,\"lastSyncedAt\":\"2026-08-18T04:00:00.000Z\"}"
+            },
+            {
+              "name": "404 Not Found — no connection",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/me/wearable-metrics/sync",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "me",
+                    "wearable-metrics",
+                    "sync"
+                  ]
+                },
+                "description": "**Story:** The mobile app pushes normalized daily metrics after reading Health Connect locally.\n\nPOST /me/wearable-metrics/sync — requires live connection.\n\n**Body:**\n- `provider` (enum)\n- `days[]` — each day needs at least one metric field\n\n**200:** `{ syncedDays, lastSyncedAt }`",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"provider\": \"HEALTH_CONNECT\",\n  \"days\": [\n    {\n      \"metricOn\": \"2026-08-18\",\n      \"steps\": 8420,\n      \"activeKcal\": 410.5,\n      \"workoutMinutes\": 45,\n      \"weightKg\": 72.3\n    }\n  ]\n}"
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\"error\":{\"code\":\"NOT_FOUND\",\"message\":\"Wearable connection not found\"}}"
+            }
+          ]
+        },
+        {
+          "name": "List My Wearable Metrics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status ok\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/wearable-metrics",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "wearable-metrics"
+              ]
+            },
+            "description": "**Story:** A client reviews synced steps, calories, and weight history.\n\nGET /me/wearable-metrics?provider=&from=&to=&limit=&offset=\n\n**200:** `{ wearableMetrics: Page }`",
+            "body": {
+              "mode": "raw"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"wearableMetrics\": {\n    \"items\": [\n      {\n        \"id\": \"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb\",\n        \"provider\": \"HEALTH_CONNECT\",\n        \"metricOn\": \"2026-08-18\",\n        \"steps\": 8420,\n        \"activeKcal\": 410.5,\n        \"workoutMinutes\": 45,\n        \"weightKg\": 72.3,\n        \"ingestedAt\": \"2026-08-18T04:00:00.000Z\"\n      }\n    ],\n    \"total\": 1,\n    \"limit\": 20,\n    \"offset\": 0\n  }\n}",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/me/wearable-metrics",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "me",
+                    "wearable-metrics"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Disconnect Wearable",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status ok\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/wearable-connections/HEALTH_CONNECT",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "wearable-connections",
+                "HEALTH_CONNECT"
+              ]
+            },
+            "description": "**Story:** A client disconnects a provider; historical metrics remain until erasure.\n\nDELETE /me/wearable-connections/:provider\n\n**200:** `{ connection }` with `active: false`",
+            "body": {
+              "mode": "raw"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"connection\": {\n    \"id\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n    \"provider\": \"HEALTH_CONNECT\",\n    \"lastSyncedAt\": \"2026-08-18T04:00:00.000Z\",\n    \"active\": false,\n    \"createdAt\": \"2026-08-18T04:00:00.000Z\"\n  }\n}",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/me/wearable-metrics",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "me",
+                    "wearable-metrics"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Client Wearable Metrics (Staff)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status ok\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/clients/{{clientUserId}}/wearable-metrics",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "clients",
+                "{{clientUserId}}",
+                "wearable-metrics"
+              ]
+            },
+            "description": "**Story:** A trainer with WEARABLES grant reviews a member's synced metrics.\n\nGET /gym-orgs/:gymOrgId/clients/:clientUserId/wearable-metrics\n\n**403** `HEALTH_SYNC_FORBIDDEN` without WEARABLES grant"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"wearableMetrics\": {\n    \"items\": [],\n    \"total\": 0,\n    \"limit\": 20,\n    \"offset\": 0\n  }\n}",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/me/wearable-metrics",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "me",
+                    "wearable-metrics"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "403 Forbidden — no WEARABLES grant",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/clients/{{clientUserId}}/wearable-metrics",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}",
+                    "clients",
+                    "{{clientUserId}}",
+                    "wearable-metrics"
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\"error\":{\"code\":\"HEALTH_SYNC_FORBIDDEN\",\"message\":\"WEARABLES grant required to view client wearable metrics\"}}"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
