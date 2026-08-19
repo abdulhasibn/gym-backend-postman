@@ -3307,10 +3307,10 @@
                 "leads"
               ]
             },
-            "description": "**Story:** A gym admin records a walk-in inquiry so the team can follow up and convert them.\n\nPOST /gym-orgs/:gymOrgId/leads — capture a lead. Status is always `NEW` on create (`followUpDate` starts null). Soft warn when another **open** lead shares the same phone — still `201`.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`\n\n**Request body (JSON):**\n- `name` (required, string) — Prospect name, 1–255 after trim. Example: `\"Priya Walk-in\"`.\n- `phone` (required, string) — Contact phone, 1–32 after trim. Example: `\"9876543210\"`.\n- `source` (optional, string or null) — Acquisition source, max 255. Example: `\"Instagram\"` or `null`.\n- `interest` (optional, string or null) — Free-text what they want (trial, PT, etc.), max 2000. Example: `\"Personal training trial\"` or `null`.\n- `notes` (optional, string or null) — Staff notes, max 5000. Example: `\"Asked about evening slots\"` or `null`.\n\n**Success `201`:** `{ lead, warnings }`\n\n**`lead` fields:**\n- `id` (uuid) — Lead id (stored as `leadId`).\n- `gymOrgId` (uuid) — Owning gym.\n- `name` / `phone` (string) — Prospect.\n- `source` (string or null) — Example: `\"Instagram\"`.\n- `status` (enum) — Always `NEW` on create. Values: `NEW`, `CONTACTED`, `TRIAL`, `CONVERTED`, `LOST`.\n- `interest` (string or null) — Free-text intent. Example: `\"Personal training trial\"`.\n- `notes` (string or null)\n- `followUpDate` (string or null) — `YYYY-MM-DD` or null (`null` on create).\n- `createdBy` (uuid) — Admin.\n- `createdAt` / `updatedAt` (string, ISO)\n\n**`warnings[]` (soft):**\n- `code` (enum) — Value: `DUPLICATE_OPEN_LEAD_PHONE`.\n- `existingLeadIds` (uuid[]) — Other open leads with same phone.\n\n**Errors:** `401` · `403` LEAD_FORBIDDEN · `422` VALIDATION_ERROR\n\nGuide: gym-backend `docs/leads.md`.",
+            "description": "**Story:** A gym admin records a walk-in or incoming inquiry so the team can follow up and convert the prospect into a member.\n\nPOST /gym-orgs/:gymOrgId/leads — capture a lead. Status is always `NEW` on create (`followUpDate` starts null). Soft warn when another **open** lead shares the same phone — still `201`.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`\n\n**Request body (JSON):**\n- `name` (required, string) — Prospect name, 1–255 after trim. Example: `\"Priya Walk-in\"`.\n- `phone` (required, string) — Contact phone, 1–32 after trim. Example: `\"9876543210\"`.\n- `email` (optional, string or null) — Prospect email, max 255, basic format validated. Example: `\"priya@example.com\"` or `null`. Required when converting to a membership invite (if not supplied at convert time).\n- `source` (optional, string or null) — Acquisition source, max 255. Example: `\"Instagram\"` or `null`.\n- `interest` (optional, string or null) — Free-text what they want (trial, PT, etc.), max 2000. Example: `\"Personal training trial\"` or `null`.\n- `notes` (optional, string or null) — Staff notes, max 5000. Example: `\"Asked about evening slots\"` or `null`.\n\n**Success `201`:** `{ lead, warnings }`\n\n**`lead` fields:**\n- `id` (uuid) — Lead id (stored as `leadId`).\n- `gymOrgId` (uuid) — Owning gym.\n- `name` / `phone` (string) — Prospect.\n- `email` (string or null) — Prospect email; null for walk-ins captured without one.\n- `source` (string or null) — Example: `\"Instagram\"`.\n- `status` (enum) — Always `NEW` on create. Values: `NEW`, `CONTACTED`, `TRIAL`, `CONVERTED`, `LOST`.\n- `interest` (string or null) — Free-text intent. Example: `\"Personal training trial\"`.\n- `notes` (string or null)\n- `followUpDate` (string or null) — `YYYY-MM-DD` or null (`null` on create).\n- `convertedMembershipInviteId` (uuid or null) — Set after successful convert; null until then.\n- `createdBy` (uuid) — Admin.\n- `createdAt` / `updatedAt` (string, ISO)\n\n**`warnings[]` (soft):**\n- `code` (enum) — Value: `DUPLICATE_OPEN_LEAD_PHONE`.\n- `existingLeadIds` (uuid[]) — Other open leads with same phone.\n\n**Errors:** `401` · `403` LEAD_FORBIDDEN · `422` VALIDATION_ERROR\n\nGuide: gym-backend `docs/leads.md`.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Walk-in Prospect\",\n  \"phone\": \"9876543210\",\n  \"source\": \"walk-in\",\n  \"interest\": \"trial\",\n  \"notes\": null\n}",
+              "raw": "{\n  \"name\": \"Priya Walk-in\",\n  \"phone\": \"9876543210\",\n  \"email\": \"priya@example.com\",\n  \"source\": \"Instagram\",\n  \"interest\": \"Personal training trial\",\n  \"notes\": null\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3365,7 +3365,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"lead\": {\n    \"id\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"name\": \"Walk-in Prospect\",\n    \"phone\": \"9876543210\",\n    \"source\": \"walk-in\",\n    \"status\": \"NEW\",\n    \"interest\": \"trial\",\n    \"notes\": null,\n    \"followUpDate\": null,\n    \"createdBy\": \"22222222-2222-4222-8222-222222222222\",\n    \"createdAt\": \"2026-08-08T00:00:00.000Z\",\n    \"updatedAt\": \"2026-08-08T00:00:00.000Z\"\n  },\n  \"warnings\": []\n}"
+              "body": "{\n  \"lead\": {\n    \"id\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"name\": \"Walk-in Prospect\",\n    \"phone\": \"9876543210\",\n    \"email\": null,\n    \"source\": \"walk-in\",\n    \"status\": \"NEW\",\n    \"interest\": \"trial\",\n    \"notes\": null,\n    \"followUpDate\": null,\n    \"convertedMembershipInviteId\": null,\n    \"createdBy\": \"22222222-2222-4222-8222-222222222222\",\n    \"createdAt\": \"2026-08-18T00:00:00.000Z\",\n    \"updatedAt\": \"2026-08-18T00:00:00.000Z\"\n  },\n  \"warnings\": []\n}"
             },
             {
               "name": "201 Created — with soft phone warn",
@@ -3413,7 +3413,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"lead\": {\n    \"id\": \"dddddddd-dddd-4ddd-8ddd-dddddddddddd\",\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"name\": \"Walk-in Prospect\",\n    \"phone\": \"9876543210\",\n    \"source\": \"walk-in\",\n    \"status\": \"NEW\",\n    \"interest\": \"trial\",\n    \"notes\": null,\n    \"followUpDate\": null,\n    \"createdBy\": \"22222222-2222-4222-8222-222222222222\",\n    \"createdAt\": \"2026-08-08T00:00:00.000Z\",\n    \"updatedAt\": \"2026-08-08T00:00:00.000Z\"\n  },\n  \"warnings\": [\n    {\n      \"code\": \"DUPLICATE_OPEN_LEAD_PHONE\",\n      \"existingLeadIds\": [\n        \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\"\n      ]\n    }\n  ]\n}"
+              "body": "{\n  \"lead\": {\n    \"id\": \"dddddddd-dddd-4ddd-8ddd-dddddddddddd\",\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"name\": \"Walk-in Prospect\",\n    \"phone\": \"9876543210\",\n    \"email\": null,\n    \"source\": \"walk-in\",\n    \"status\": \"NEW\",\n    \"interest\": \"trial\",\n    \"notes\": null,\n    \"followUpDate\": null,\n    \"convertedMembershipInviteId\": null,\n    \"createdBy\": \"22222222-2222-4222-8222-222222222222\",\n    \"createdAt\": \"2026-08-18T00:00:00.000Z\",\n    \"updatedAt\": \"2026-08-18T00:00:00.000Z\"\n  },\n  \"warnings\": [\n    {\n      \"code\": \"DUPLICATE_OPEN_LEAD_PHONE\",\n      \"existingLeadIds\": [\n        \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\"\n      ]\n    }\n  ]\n}"
             },
             {
               "name": "403 — lead forbidden",
@@ -3642,7 +3642,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"lead\": {\n    \"id\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"name\": \"Walk-in Prospect\",\n    \"phone\": \"9876543210\",\n    \"source\": \"walk-in\",\n    \"status\": \"NEW\",\n    \"interest\": \"trial\",\n    \"notes\": null,\n    \"followUpDate\": null,\n    \"createdBy\": \"22222222-2222-4222-8222-222222222222\",\n    \"createdAt\": \"2026-08-08T00:00:00.000Z\",\n    \"updatedAt\": \"2026-08-08T00:00:00.000Z\"\n  }\n}"
+              "body": "{\n  \"lead\": {\n    \"id\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"name\": \"Walk-in Prospect\",\n    \"phone\": \"9876543210\",\n    \"source\": \"walk-in\",\n    \"status\": \"NEW\",\n    \"interest\": \"trial\",\n    \"notes\": null,\n    \"followUpDate\": null,\n    \"createdBy\": \"22222222-2222-4222-8222-222222222222\",\n    \"createdAt\": \"2026-08-08T00:00:00.000Z\",\n    \"updatedAt\": \"2026-08-08T00:00:00.000Z\",\n    \"email\": null,\n    \"convertedMembershipInviteId\": null\n  }\n}"
             },
             {
               "name": "404 — not found",
@@ -3712,10 +3712,10 @@
                 "{{leadId}}"
               ]
             },
-            "description": "**Story:** A gym admin updates a lead’s contact info, notes, interest, or next follow-up date.\n\nPATCH /gym-orgs/:gymOrgId/leads/:leadId — update profile + optional follow-up date.\n\n**Auth:** Bearer ADMIN  \n**Path:** `gymOrgId`, `leadId`\n\n**Request body (JSON):**\n- `name` (required, string) — Prospect name, 1–255. Example: `\"Priya Walk-in\"`.\n- `phone` (required, string) — Contact phone, 1–32. Example: `\"9876543210\"`.\n- `source` (optional, string or null) — max 255. Example: `\"Walk-in\"` or `null`.\n- `interest` (optional, string or null) — Free-text intent, max 2000. Example: `\"Personal training trial\"`.\n- `notes` (optional, string or null) — max 5000. Example: `\"Prefers 7pm\"`.\n- `followUpDate` (optional, string or null) — `YYYY-MM-DD`, or `null` to clear. **Omit key** to keep existing. Example: `\"2026-08-15\"`.\n\n**Success `200`:** `{ lead, warnings }` (same soft dup-phone warn as create)  \n**Errors:** `404` · `422` VALIDATION_ERROR",
+            "description": "**Story:** A gym admin updates a lead's contact details or notes as the conversation progresses.\n\nPATCH /gym-orgs/:gymOrgId/leads/:leadId — edit profile fields. All body fields are optional; omit to leave unchanged.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`, `leadId`\n\n**Request body (JSON — all optional):**\n- `name` (optional, string) — Updated name, 1–255 after trim.\n- `phone` (optional, string) — Updated phone, 1–32 after trim.\n- `email` (optional, string or null) — Prospect email, max 255. Use to add/correct an email without converting. Send `null` to clear.\n- `source` (optional, string or null) — Acquisition source, max 255.\n- `interest` (optional, string or null) — Free-text intent, max 2000.\n- `notes` (optional, string or null) — Staff notes, max 5000.\n- `followUpDate` (optional, string or null) — `YYYY-MM-DD` or null.\n\n**Success `200`:** `{ lead }`\n\n**`lead` fields:** Same as Create Lead response (`id`, `gymOrgId`, `name`, `phone`, `email`, `source`, `status`, `interest`, `notes`, `followUpDate`, `convertedMembershipInviteId`, `createdBy`, `createdAt`, `updatedAt`).\n\n**Errors:** `401` · `403` LEAD_FORBIDDEN · `404` · `422` VALIDATION_ERROR\n\nGuide: gym-backend `docs/leads.md`.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Walk-in Prospect\",\n  \"phone\": \"9876543210\",\n  \"source\": \"walk-in\",\n  \"interest\": \"trial\",\n  \"notes\": \"follow up\",\n  \"followUpDate\": \"2026-08-10\"\n}",
+              "raw": "{\n  \"name\": \"Priya Walk-in\",\n  \"phone\": \"9876543210\",\n  \"email\": \"priya@example.com\",\n  \"source\": \"Instagram\",\n  \"interest\": \"Personal training trial\",\n  \"notes\": \"Called twice — very interested.\",\n  \"followUpDate\": \"2026-08-25\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3725,7 +3725,8 @@
           },
           "response": [
             {
-              "name": "200 OK — updated with followUpDate",
+              "id": "update-200",
+              "name": "200 OK — lead updated",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -3750,10 +3751,10 @@
                     "{{leadId}}"
                   ]
                 },
-                "description": "PATCH /gym-orgs/:gymOrgId/leads/:leadId — update profile fields. This does **not** change status (use Change Lead Status). Set `followUpDate` here (`YYYY-MM-DD`), or `null` to clear; omit to keep.\n\n**Auth:** Bearer ADMIN at gym\n**Request body (JSON):**\n- `name` string (required)\n- `phone` string (required)\n- `source` string | null (optional)\n- `interest` string | null (optional)\n- `notes` string | null (optional)\n- `followUpDate` `YYYY-MM-DD` | null | omit\n\n**Response type:** `application/json`\n**Success:** `200` `{ lead, warnings }` (same soft phone-dup warn as create)\n**Errors:** `401` AUTHENTICATION_FAILED; `403` LEAD_FORBIDDEN; `404` NOT_FOUND; `422` VALIDATION_ERROR | LEAD_DELETED.",
+                "description": "**Story:** A gym admin updates a lead's contact details or notes as the conversation progresses.\n\nPATCH /gym-orgs/:gymOrgId/leads/:leadId — edit profile fields. All body fields are optional; omit to leave unchanged.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`, `leadId`\n\n**Request body (JSON — all optional):**\n- `name` (optional, string) — Updated name, 1–255 after trim.\n- `phone` (optional, string) — Updated phone, 1–32 after trim.\n- `email` (optional, string or null) — Prospect email, max 255. Use to add/correct an email without converting. Send `null` to clear.\n- `source` (optional, string or null) — Acquisition source, max 255.\n- `interest` (optional, string or null) — Free-text intent, max 2000.\n- `notes` (optional, string or null) — Staff notes, max 5000.\n- `followUpDate` (optional, string or null) — `YYYY-MM-DD` or null.\n\n**Success `200`:** `{ lead }`\n\n**`lead` fields:** Same as Create Lead response (`id`, `gymOrgId`, `name`, `phone`, `email`, `source`, `status`, `interest`, `notes`, `followUpDate`, `convertedMembershipInviteId`, `createdBy`, `createdAt`, `updatedAt`).\n\n**Errors:** `401` · `403` LEAD_FORBIDDEN · `404` · `422` VALIDATION_ERROR\n\nGuide: gym-backend `docs/leads.md`.",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": \"Walk-in Prospect\",\n  \"phone\": \"9876543210\",\n  \"source\": \"walk-in\",\n  \"interest\": \"trial\",\n  \"notes\": \"follow up\",\n  \"followUpDate\": \"2026-08-10\"\n}",
+                  "raw": "{\n  \"name\": \"Priya Walk-in\",\n  \"phone\": \"9876543210\",\n  \"email\": \"priya@example.com\",\n  \"source\": \"Instagram\",\n  \"interest\": \"Personal training trial\",\n  \"notes\": \"Called twice — very interested.\",\n  \"followUpDate\": \"2026-08-25\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -3771,10 +3772,11 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"lead\": {\n    \"id\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"name\": \"Walk-in Prospect\",\n    \"phone\": \"9876543210\",\n    \"source\": \"walk-in\",\n    \"status\": \"NEW\",\n    \"interest\": \"trial\",\n    \"notes\": \"follow up\",\n    \"followUpDate\": \"2026-08-10\",\n    \"createdBy\": \"22222222-2222-4222-8222-222222222222\",\n    \"createdAt\": \"2026-08-08T00:00:00.000Z\",\n    \"updatedAt\": \"2026-08-08T01:00:00.000Z\"\n  },\n  \"warnings\": []\n}"
+              "body": "{\n  \"lead\": {\n    \"id\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"name\": \"Priya Walk-in\",\n    \"phone\": \"9876543210\",\n    \"email\": \"priya@example.com\",\n    \"source\": \"Instagram\",\n    \"status\": \"CONTACTED\",\n    \"interest\": \"Personal training trial\",\n    \"notes\": \"Called twice — very interested.\",\n    \"followUpDate\": \"2026-08-25\",\n    \"convertedMembershipInviteId\": null,\n    \"createdBy\": \"22222222-2222-4222-8222-222222222222\",\n    \"createdAt\": \"2026-08-18T00:00:00.000Z\",\n    \"updatedAt\": \"2026-08-19T00:00:00.000Z\"\n  }\n}"
             },
             {
-              "name": "422 — VALIDATION_ERROR",
+              "id": "update-404",
+              "name": "404 — Lead not found",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -3787,15 +3789,6 @@
                     "value": "application/json"
                   }
                 ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"name\": \"Walk-in Prospect\",\n  \"phone\": \"9876543210\",\n  \"source\": \"walk-in\",\n  \"interest\": \"trial\",\n  \"notes\": \"follow up\",\n  \"followUpDate\": \"2026-08-10\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
                 "url": {
                   "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/leads/{{leadId}}",
                   "host": [
@@ -3807,10 +3800,20 @@
                     "leads",
                     "{{leadId}}"
                   ]
+                },
+                "description": "**Story:** A gym admin updates a lead's contact details or notes as the conversation progresses.\n\nPATCH /gym-orgs/:gymOrgId/leads/:leadId — edit profile fields. All body fields are optional; omit to leave unchanged.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`, `leadId`\n\n**Request body (JSON — all optional):**\n- `name` (optional, string) — Updated name, 1–255 after trim.\n- `phone` (optional, string) — Updated phone, 1–32 after trim.\n- `email` (optional, string or null) — Prospect email, max 255. Use to add/correct an email without converting. Send `null` to clear.\n- `source` (optional, string or null) — Acquisition source, max 255.\n- `interest` (optional, string or null) — Free-text intent, max 2000.\n- `notes` (optional, string or null) — Staff notes, max 5000.\n- `followUpDate` (optional, string or null) — `YYYY-MM-DD` or null.\n\n**Success `200`:** `{ lead }`\n\n**`lead` fields:** Same as Create Lead response (`id`, `gymOrgId`, `name`, `phone`, `email`, `source`, `status`, `interest`, `notes`, `followUpDate`, `convertedMembershipInviteId`, `createdBy`, `createdAt`, `updatedAt`).\n\n**Errors:** `401` · `403` LEAD_FORBIDDEN · `404` · `422` VALIDATION_ERROR\n\nGuide: gym-backend `docs/leads.md`.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Priya Walk-in\",\n  \"phone\": \"9876543210\",\n  \"email\": \"priya@example.com\",\n  \"source\": \"Instagram\",\n  \"interest\": \"Personal training trial\",\n  \"notes\": \"Called twice — very interested.\",\n  \"followUpDate\": \"2026-08-25\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 }
               },
-              "status": "Unprocessable Entity",
-              "code": 422,
+              "status": "Not Found",
+              "code": 404,
               "_postman_previewlanguage": "json",
               "header": [
                 {
@@ -3819,7 +3822,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Invalid request\"\n  }\n}"
+              "body": "{\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"Lead not found\"\n  }\n}"
             }
           ]
         },
@@ -4049,6 +4052,146 @@
               ],
               "cookie": [],
               "body": "{\n  \"leads\": {\n    \"items\": [\n      {\n        \"id\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n        \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n        \"name\": \"Walk-in Prospect\",\n        \"phone\": \"9876543210\",\n        \"source\": \"walk-in\",\n        \"status\": \"NEW\",\n        \"interest\": \"trial\",\n        \"notes\": \"follow up\",\n        \"followUpDate\": \"2026-08-10\",\n        \"createdBy\": \"22222222-2222-4222-8222-222222222222\",\n        \"createdAt\": \"2026-08-08T00:00:00.000Z\",\n        \"updatedAt\": \"2026-08-08T01:00:00.000Z\"\n      }\n    ],\n    \"total\": 1,\n    \"limit\": 20,\n    \"offset\": 0\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Convert Lead",
+          "id": "8189c90c-1203-4a61-8fb0-20a55878b550",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/leads/{{leadId}}/convert",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "gym-orgs",
+                "{{gymOrgId}}",
+                "leads",
+                "{{leadId}}",
+                "convert"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invitedEmail\": \"priya@example.com\",\n  \"basePlanId\": \"{{basePlanId}}\",\n  \"basePaymentStatus\": \"paid\",\n  \"addonPlanId\": null,\n  \"addonPaymentStatus\": null,\n  \"expiresAt\": \"2026-09-18T00:00:00.000Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "**Story:** A gym admin converts a qualified lead into a membership invite so the prospect can accept and join the gym as a member.\n\nPOST /gym-orgs/:gymOrgId/leads/:leadId/convert — create a PENDING membership invite from this lead. The lead status flips to `CONVERTED`. Cannot re-convert an already-converted lead or a `LOST` lead.\n\n**Auth:** Bearer ADMIN at gym  \n**Path:** `gymOrgId`, `leadId`\n\n**Email resolution:** Email used for the invite = `invitedEmail` from body (if provided), otherwise the email stored on the lead. At least one must be present — the API returns `422` LEAD_EMAIL_REQUIRED if neither exists.\n\n**Request body (JSON):**\n- `invitedEmail` (optional, string) — Email for the invite. Overrides / sets the lead's stored email. Required if the lead has no email on file.\n- `basePlanId` (required, uuid) — The plan to attach as the base membership.\n- `basePaymentStatus` (required, enum) — Payment status for the base plan. Values: `paid`, `unpaid`, `partial`. Example: `\"paid\"`.\n- `addonPlanId` (optional, uuid or null) — Add-on plan, if any. Required when `addonPaymentStatus` is supplied.\n- `addonPaymentStatus` (optional, enum or null) — Payment status for the add-on. Values: `paid`, `unpaid`, `partial`. Required when `addonPlanId` is supplied.\n- `expiresAt` (optional, string or null) — ISO 8601 invite expiry. Invite stays open indefinitely if omitted.\n\n**Success `201`:** `{ lead, membershipInvite }`\n\n**`lead` fields:** Full lead object with `status` now `CONVERTED` and `convertedMembershipInviteId` set.\n\n**`membershipInvite` fields:**\n- `id` (uuid) — Invite id.\n- `gymOrgId` (uuid)\n- `invitedEmail` (string)\n- `inviteeName` (string)\n- `inviteePhone` (string or null)\n- `basePlanId` (uuid)\n- `basePaymentStatus` (enum) — Values: `paid`, `unpaid`, `partial`.\n- `addonPlanId` (uuid or null)\n- `addonPaymentStatus` (enum or null)\n- `status` (enum) — Always `PENDING` on create. Values: `PENDING`, `ACCEPTED`, `EXPIRED`, `REVOKED`.\n- `expiresAt` (string or null) — ISO 8601.\n- `createdBy` (uuid)\n- `acceptedAt` (string or null)\n- `acceptedMembershipId` (uuid or null)\n- `createdAt` / `updatedAt` (string, ISO)\n\n**Errors:** `401` · `403` LEAD_FORBIDDEN · `404` lead not found · `409` LEAD_ALREADY_CONVERTED · `422` LEAD_EMAIL_REQUIRED · `422` VALIDATION_ERROR · `422` LEAD_NOT_CONVERTIBLE (lost lead)\n\nGuide: gym-backend `docs/leads.md`."
+          },
+          "response": [
+            {
+              "id": "00233039-68d8-479a-a235-22d5e278254d",
+              "name": "201 Created — lead converted",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/leads/{{leadId}}/convert"
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"lead\": {\n    \"id\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"name\": \"Priya Walk-in\",\n    \"phone\": \"9876543210\",\n    \"email\": \"priya@example.com\",\n    \"source\": \"Instagram\",\n    \"status\": \"CONVERTED\",\n    \"interest\": \"Personal training trial\",\n    \"notes\": null,\n    \"followUpDate\": null,\n    \"convertedMembershipInviteId\": \"eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee\",\n    \"createdBy\": \"22222222-2222-4222-8222-222222222222\",\n    \"createdAt\": \"2026-08-18T00:00:00.000Z\",\n    \"updatedAt\": \"2026-08-19T00:00:00.000Z\"\n  },\n  \"membershipInvite\": {\n    \"id\": \"eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee\",\n    \"gymOrgId\": \"33333333-3333-4333-8333-333333333333\",\n    \"invitedEmail\": \"priya@example.com\",\n    \"invitedUserId\": null,\n    \"inviteeName\": \"Priya Walk-in\",\n    \"inviteePhone\": \"9876543210\",\n    \"basePlanId\": \"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb\",\n    \"basePaymentStatus\": \"paid\",\n    \"addonPlanId\": null,\n    \"addonPaymentStatus\": null,\n    \"status\": \"PENDING\",\n    \"expiresAt\": \"2026-09-18T00:00:00.000Z\",\n    \"createdBy\": \"22222222-2222-4222-8222-222222222222\",\n    \"acceptedAt\": null,\n    \"acceptedMembershipId\": null,\n    \"createdAt\": \"2026-08-19T00:00:00.000Z\",\n    \"updatedAt\": \"2026-08-19T00:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "id": "cd00f6cd-6c5f-4fdb-aa30-b26da51e34ce",
+              "name": "409 — LEAD_ALREADY_CONVERTED",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/leads/{{leadId}}/convert"
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"LEAD_ALREADY_CONVERTED\",\n    \"message\": \"Lead has already been converted to a membership invite\"\n  }\n}"
+            },
+            {
+              "id": "b06a41fa-86b2-4d8f-a59e-862d7a4d9311",
+              "name": "422 — LEAD_EMAIL_REQUIRED",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/leads/{{leadId}}/convert"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"LEAD_EMAIL_REQUIRED\",\n    \"message\": \"An email is required to convert a lead; set it on the lead or pass invitedEmail\"\n  }\n}"
+            },
+            {
+              "id": "f4967aa2-5bfc-4e72-b9d8-beca2865fe4a",
+              "name": "422 — LEAD_NOT_CONVERTIBLE (lost)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}/leads/{{leadId}}/convert"
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"code\": \"LEAD_NOT_CONVERTIBLE\",\n    \"message\": \"Lost leads cannot be converted; create a new lead for a re-inquiry\"\n  }\n}"
             }
           ]
         },
