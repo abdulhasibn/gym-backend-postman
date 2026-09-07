@@ -82,8 +82,9 @@ Shared error envelope:
 11. Membership invites + grants (needs BASE `planId`):
    1. Admin token: **Membership Invites → Create Membership Invite** (stores `membershipInviteId`; use invitee CLIENT email)
    2. Client token (same email): **Membership Invite Inbox** → **Accept Membership Invite** (stores `membershipId`)
-   3. Client: **Get My Data Grants** / **Update My Data Grants** while ACTIVE
-   4. Or admin: **List Membership Invites** → **Revoke Membership Invite** while still `PENDING`
+   3. Client: **Gym Orgs → Get My Gym** (stores `gymOrgId` from token; no path id)
+   4. Client: **Get My Data Grants** / **Update My Data Grants** while ACTIVE
+   5. Or admin: **List Membership Invites** → **Revoke Membership Invite** while still `PENDING`
 12. Subscriptions (after accept; needs `clientUserId` / `subscriptionId`):
    1. Admin: **Subscriptions → List Client Subscriptions**
    2. Admin: **Update Subscription Payment** / **Override Subscription Start** (unstarted BASE)

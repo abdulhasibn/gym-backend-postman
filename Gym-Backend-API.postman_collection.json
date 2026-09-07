@@ -78,7 +78,7 @@
       "key": "gymOrgId",
       "value": "",
       "type": "default",
-      "description": "Set by Create Gym Org"
+      "description": "Set by Create Gym Org (staff) or Get My Gym (CLIENT)"
     },
     {
       "key": "staffInviteId",
@@ -1768,7 +1768,7 @@
     },
     {
       "name": "Gym Orgs",
-      "description": "Create, list, get, and update gym organizations (STAFF / gym admin).",
+      "description": "Create, list, get, and update gym organizations. CLIENT: GET /me/gym returns the subscribed gym from the Bearer token (no gymOrgId). STAFF uses create/list/get/patch and trainers.",
       "item": [
         {
           "name": "Create Gym Org",
@@ -1978,7 +1978,7 @@
                 "gym-orgs"
               ]
             },
-            "description": "**Story:** A staff member or subscribed client sees the gyms they belong to.\n\nGET /gym-orgs — staff: admin/trainer affiliations. CLIENT: ACTIVE membership gyms (usually one).\n\n**Auth:** Bearer affiliated staff, or CLIENT with an ACTIVE membership  \n**Request body:** none\n\n**Success `200`:** `{ gymOrgs: [...] }` (may be `[]`)\n\n**`gymOrgs[]` item:**\n- `id` (uuid) — Gym org id.\n- `name` (string) — Gym name. Example: `\"North Star Fitness\"`.\n- `timezone` (IANA string) — Example: `\"Asia/Kolkata\"`.\n- `isOwner` (boolean) — Whether actor owns this gym. CLIENT items are always `false`."
+            "description": "**Story:** A staff member or subscribed client sees the gyms they belong to.\n\nGET /gym-orgs — staff: admin/trainer affiliations. CLIENT: ACTIVE membership gyms (usually one). For the CLIENT current gym with no id in the path, use Get My Gym (`GET /me/gym`).\n\n**Auth:** Bearer affiliated staff, or CLIENT with an ACTIVE membership  \n**Request body:** none\n\n**Success `200`:** `{ gymOrgs: [...] }` (may be `[]`)\n\n**`gymOrgs[]` item:**\n- `id` (uuid) — Gym org id.\n- `name` (string) — Gym name. Example: `\"North Star Fitness\"`.\n- `timezone` (IANA string) — Example: `\"Asia/Kolkata\"`.\n- `isOwner` (boolean) — Whether actor owns this gym. CLIENT items are always `false`."
           },
           "response": [
             {
@@ -2101,6 +2101,166 @@
           "uid": "25800783-702a01cb-08c5-72db-f319-9e98986ecbb8"
         },
         {
+          "name": "Get My Gym",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('gymOrg shape', function () {",
+                  "  pm.expect(body).to.have.property('gymOrg');",
+                  "  pm.expect(body.gymOrg).to.include.keys('id', 'name', 'timezone', 'ownerUserId', 'isOwner');",
+                  "  pm.expect(body.gymOrg.isOwner).to.equal(false);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200 && body.gymOrg && body.gymOrg.id) {",
+                  "  pm.collectionVariables.set('gymOrgId', body.gymOrg.id);",
+                  "  pm.environment.set('gymOrgId', body.gymOrg.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "id": "55e56129-bfd4-4f98-97b0-4ef2cda141ec",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/gym",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "gym"
+              ]
+            },
+            "description": "**Story:** A subscribed client opens their gym’s profile using only their login token.\n\nGET /me/gym — CLIENT current gym from the Bearer token. No gymOrgId in the path; the backend uses the ACTIVE membership.\n\n**Auth:** Bearer CLIENT only  \n**Path / query / body:** none\n\n**Success `200`:** `{ gymOrg }` — same detail as Get Gym Org. `isOwner` is always `false`. Use `gymOrg.id` on later gym-scoped routes.\n\n**`gymOrg` fields:**\n- `id` (uuid) — Gym org id. Saved to `{{gymOrgId}}` by the test script.\n- `name` (string) — Gym name. Example: `\"Iron Temple\"`.\n- `address` (string or null) — Address. Example: `\"12 Lift St\"`.\n- `contactPhone` (string or null) — Phone. Example: `\"+15550001111\"`.\n- `contactEmail` (string or null) — Email. Example: `\"desk@irontemple.example\"`.\n- `logoUrl` (string or null) — Logo URL.\n- `timezone` (IANA string) — Example: `\"Asia/Kolkata\"`.\n- `ownerUserId` (uuid) — Owner.\n- `isOwner` (boolean) — Always `false` for CLIENT.\n- `createdAt` / `updatedAt` (string, ISO) — Timestamps.\n\n**Errors:** `401` AUTHENTICATION_FAILED · `403` GYM_ORG_READ_FORBIDDEN (staff token) · `404` NOT_FOUND (no ACTIVE membership)"
+          },
+          "response": [
+            {
+              "id": "3e72d978-28c7-4b6f-a186-99ff2fb06270",
+              "name": "200 OK — CLIENT current gym",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/me/gym",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "me",
+                    "gym"
+                  ]
+                },
+                "description": "GET /me/gym — CLIENT current gym from the Bearer token (ACTIVE membership).\n\n**Auth:** collection Bearer `{{accessToken}}` (CLIENT)\n\n**Success:** `200` `{ gymOrg }` with `isOwner: false`.\n**Errors:** `401` AUTHENTICATION_FAILED; `403` GYM_ORG_READ_FORBIDDEN; `404` NOT_FOUND."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "responseTime": null,
+              "body": "{\n  \"gymOrg\": {\n    \"id\": \"33333333-3333-4333-8333-333333333333\",\n    \"name\": \"Iron Temple\",\n    \"address\": \"12 Lift St\",\n    \"contactPhone\": \"+15550001111\",\n    \"contactEmail\": \"desk@irontemple.example\",\n    \"logoUrl\": null,\n    \"timezone\": \"Asia/Kolkata\",\n    \"ownerUserId\": \"22222222-2222-4222-8222-222222222222\",\n    \"isOwner\": false,\n    \"createdAt\": \"2026-08-03T00:00:00.000Z\",\n    \"updatedAt\": \"2026-08-03T00:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "id": "71609755-53c1-4f04-8d4c-b098d8a22527",
+              "name": "404 — no ACTIVE membership",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/me/gym",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "me",
+                    "gym"
+                  ]
+                },
+                "description": "GET /me/gym — CLIENT with no ACTIVE membership yet.\n\n**Auth:** collection Bearer `{{accessToken}}` (CLIENT)\n\n**Errors:** `404` NOT_FOUND."
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "responseTime": null,
+              "body": "{\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"Active membership gym not found\"\n  }\n}"
+            },
+            {
+              "id": "113800fe-0cb4-455f-b3e4-9fe68d1956e4",
+              "name": "403 — GYM_ORG_READ_FORBIDDEN (staff)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/me/gym",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "me",
+                    "gym"
+                  ]
+                },
+                "description": "GET /me/gym — staff token is rejected. Use List My Gym Orgs / Get Gym Org instead.\n\n**Auth:** collection Bearer `{{accessToken}}` (STAFF)\n\n**Errors:** `403` GYM_ORG_READ_FORBIDDEN."
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "responseTime": null,
+              "body": "{\n  \"error\": {\n    \"code\": \"GYM_ORG_READ_FORBIDDEN\",\n    \"message\": \"Only client accounts can read their subscribed gym\"\n  }\n}"
+            }
+          ]
+        },
+        {
           "name": "Get Gym Org",
           "event": [
             {
@@ -2141,7 +2301,7 @@
                 "{{gymOrgId}}"
               ]
             },
-            "description": "**Story:** A staff member or subscribed client opens one gym’s profile details.\n\nGET /gym-orgs/:gymOrgId — gym detail for affiliated staff or CLIENT with an ACTIVE membership at that gym.\n\n**Auth:** Bearer affiliated staff, or CLIENT with ACTIVE membership at `gymOrgId`  \n**Path:** `gymOrgId` — from Create Gym Org (staff) or List My Gym Orgs (client)\n\n**Success `200`:** `{ gymOrg }` including `isOwner` (CLIENT always `false`).\n\n**`gymOrg` fields:**\n- `id` (uuid) — Gym org id.\n- `name` (string) — Gym name. Example: `\"North Star Fitness\"`.\n- `address` (string or null) — Address. Example: `\"12 Lift St\"`.\n- `contactPhone` (string or null) — Phone. Example: `\"+15550001111\"`.\n- `contactEmail` (string or null) — Email. Example: `\"hello@example.com\"`.\n- `logoUrl` (string or null) — Logo URL.\n- `timezone` (IANA string) — Example: `\"Asia/Kolkata\"`.\n- `ownerUserId` (uuid) — Owner.\n- `isOwner` (boolean) — Actor is owner. CLIENT is always `false`.\n- `createdAt` / `updatedAt` (string, ISO) — Timestamps.\n\n**Errors:** `401` AUTHENTICATION_FAILED · `404` NOT_FOUND (no staff affiliation and no ACTIVE membership)"
+            "description": "**Story:** A staff member or subscribed client opens one gym’s profile details.\n\nGET /gym-orgs/:gymOrgId — gym detail for affiliated staff or CLIENT with an ACTIVE membership at that gym.\n\n**Auth:** Bearer affiliated staff, or CLIENT with ACTIVE membership at `gymOrgId`  \n**Path:** `gymOrgId` — from Create Gym Org (staff), Get My Gym, or List My Gym Orgs\n\n**Success `200`:** `{ gymOrg }` including `isOwner` (CLIENT always `false`).\n\n**`gymOrg` fields:**\n- `id` (uuid) — Gym org id.\n- `name` (string) — Gym name. Example: `\"North Star Fitness\"`.\n- `address` (string or null) — Address. Example: `\"12 Lift St\"`.\n- `contactPhone` (string or null) — Phone. Example: `\"+15550001111\"`.\n- `contactEmail` (string or null) — Email. Example: `\"hello@example.com\"`.\n- `logoUrl` (string or null) — Logo URL.\n- `timezone` (IANA string) — Example: `\"Asia/Kolkata\"`.\n- `ownerUserId` (uuid) — Owner.\n- `isOwner` (boolean) — Actor is owner. CLIENT is always `false`.\n- `createdAt` / `updatedAt` (string, ISO) — Timestamps.\n\n**Errors:** `401` AUTHENTICATION_FAILED · `404` NOT_FOUND (no staff affiliation and no ACTIVE membership)"
           },
           "response": [
             {
