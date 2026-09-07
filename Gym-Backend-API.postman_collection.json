@@ -1978,7 +1978,7 @@
                 "gym-orgs"
               ]
             },
-            "description": "**Story:** A staff member sees every gym they administer or train at.\n\nGET /gym-orgs — list gyms where the actor is admin or trainer.\n\n**Auth:** Bearer affiliated staff  \n**Request body:** none\n\n**Success `200`:** `{ gymOrgs: [...] }` (may be `[]`)\n\n**`gymOrgs[]` item:**\n- `id` (uuid) — Gym org id.\n- `name` (string) — Gym name. Example: `\"North Star Fitness\"`.\n- `timezone` (IANA string) — Example: `\"Asia/Kolkata\"`.\n- `isOwner` (boolean) — Whether actor owns this gym."
+            "description": "**Story:** A staff member or subscribed client sees the gyms they belong to.\n\nGET /gym-orgs — staff: admin/trainer affiliations. CLIENT: ACTIVE membership gyms (usually one).\n\n**Auth:** Bearer affiliated staff, or CLIENT with an ACTIVE membership  \n**Request body:** none\n\n**Success `200`:** `{ gymOrgs: [...] }` (may be `[]`)\n\n**`gymOrgs[]` item:**\n- `id` (uuid) — Gym org id.\n- `name` (string) — Gym name. Example: `\"North Star Fitness\"`.\n- `timezone` (IANA string) — Example: `\"Asia/Kolkata\"`.\n- `isOwner` (boolean) — Whether actor owns this gym. CLIENT items are always `false`."
           },
           "response": [
             {
@@ -2001,7 +2001,7 @@
                     "gym-orgs"
                   ]
                 },
-                "description": "GET /gym-orgs — list gym organizations affiliated with the authenticated user.\n\n**Auth:** collection Bearer `{{accessToken}}` (any provisioned actor)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrgs: Array<{ id, name, timezone, isOwner }> }` — empty list is `{ gymOrgs: [] }`\n**Errors:** `401` AUTHENTICATION_FAILED."
+                "description": "GET /gym-orgs — list gyms for affiliated staff (admin/trainer) or CLIENT with an ACTIVE membership.\n\n**Auth:** collection Bearer `{{accessToken}}`\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrgs: Array<{ id, name, timezone, isOwner }> }` — empty list is `{ gymOrgs: [] }`. CLIENT items have `isOwner: false`.\n**Errors:** `401` AUTHENTICATION_FAILED."
               },
               "status": "OK",
               "code": 200,
@@ -2018,6 +2018,44 @@
               "createdAt": "2026-08-03T13:53:40.000Z",
               "updatedAt": "2026-08-03T13:53:40.000Z",
               "uid": "25800783-cb37ba96-cac9-f848-293f-f97a208e02a8"
+            },
+            {
+              "id": "a1c4e6f8-2b0d-4c9e-8a11-7d3f5b9e21c0",
+              "name": "200 OK — CLIENT subscribed gym",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs"
+                  ]
+                },
+                "description": "GET /gym-orgs — CLIENT with an ACTIVE membership. `isOwner` is always false.\n\n**Auth:** collection Bearer `{{accessToken}}` (CLIENT)\n\n**Success:** `200` `{ gymOrgs: [{ id, name, timezone, isOwner: false }] }` — empty if no ACTIVE membership.\n**Errors:** `401` AUTHENTICATION_FAILED."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "responseTime": null,
+              "body": "{\n  \"gymOrgs\": [\n    {\n      \"id\": \"33333333-3333-4333-8333-333333333333\",\n      \"name\": \"Iron Temple\",\n      \"timezone\": \"Asia/Kolkata\",\n      \"isOwner\": false\n    }\n  ]\n}",
+              "createdAt": "2026-09-07T15:00:00.000Z",
+              "updatedAt": "2026-09-07T15:00:00.000Z",
+              "uid": "25800783-a1c4e6f8-2b0d-4c9e-8a11-7d3f5b9e21c0"
             },
             {
               "id": "86b2d106-b058-a022-42ef-70feb1918fda",
@@ -2039,7 +2077,7 @@
                     "gym-orgs"
                   ]
                 },
-                "description": "GET /gym-orgs — list gym organizations affiliated with the authenticated user.\n\n**Auth:** collection Bearer `{{accessToken}}` (any provisioned actor)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrgs: Array<{ id, name, timezone, isOwner }> }` — empty list is `{ gymOrgs: [] }`\n**Errors:** `401` AUTHENTICATION_FAILED."
+                "description": "GET /gym-orgs — list gyms for affiliated staff (admin/trainer) or CLIENT with an ACTIVE membership.\n\n**Auth:** collection Bearer `{{accessToken}}`\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrgs: Array<{ id, name, timezone, isOwner }> }` — empty list is `{ gymOrgs: [] }`. CLIENT items have `isOwner: false`.\n**Errors:** `401` AUTHENTICATION_FAILED."
               },
               "status": "OK",
               "code": 200,
@@ -2103,7 +2141,7 @@
                 "{{gymOrgId}}"
               ]
             },
-            "description": "**Story:** A staff member opens one gym’s profile details.\n\nGET /gym-orgs/:gymOrgId — gym detail for affiliated staff.\n\n**Auth:** Bearer affiliated staff  \n**Path:** `gymOrgId` — set by Create Gym Org\n\n**Success `200`:** `{ gymOrg }` including `isOwner`.\n\n**`gymOrg` fields:**\n- `id` (uuid) — Gym org id.\n- `name` (string) — Gym name. Example: `\"North Star Fitness\"`.\n- `address` (string or null) — Address. Example: `\"12 Lift St\"`.\n- `contactPhone` (string or null) — Phone. Example: `\"+15550001111\"`.\n- `contactEmail` (string or null) — Email. Example: `\"hello@example.com\"`.\n- `logoUrl` (string or null) — Logo URL.\n- `timezone` (IANA string) — Example: `\"Asia/Kolkata\"`.\n- `ownerUserId` (uuid) — Owner.\n- `isOwner` (boolean) — Actor is owner.\n- `createdAt` / `updatedAt` (string, ISO) — Timestamps."
+            "description": "**Story:** A staff member or subscribed client opens one gym’s profile details.\n\nGET /gym-orgs/:gymOrgId — gym detail for affiliated staff or CLIENT with an ACTIVE membership at that gym.\n\n**Auth:** Bearer affiliated staff, or CLIENT with ACTIVE membership at `gymOrgId`  \n**Path:** `gymOrgId` — from Create Gym Org (staff) or List My Gym Orgs (client)\n\n**Success `200`:** `{ gymOrg }` including `isOwner` (CLIENT always `false`).\n\n**`gymOrg` fields:**\n- `id` (uuid) — Gym org id.\n- `name` (string) — Gym name. Example: `\"North Star Fitness\"`.\n- `address` (string or null) — Address. Example: `\"12 Lift St\"`.\n- `contactPhone` (string or null) — Phone. Example: `\"+15550001111\"`.\n- `contactEmail` (string or null) — Email. Example: `\"hello@example.com\"`.\n- `logoUrl` (string or null) — Logo URL.\n- `timezone` (IANA string) — Example: `\"Asia/Kolkata\"`.\n- `ownerUserId` (uuid) — Owner.\n- `isOwner` (boolean) — Actor is owner. CLIENT is always `false`.\n- `createdAt` / `updatedAt` (string, ISO) — Timestamps.\n\n**Errors:** `401` AUTHENTICATION_FAILED · `404` NOT_FOUND (no staff affiliation and no ACTIVE membership)"
           },
           "response": [
             {
@@ -2127,7 +2165,7 @@
                     "{{gymOrgId}}"
                   ]
                 },
-                "description": "GET /gym-orgs/:gymOrgId — org detail for affiliated staff (admin or trainer).\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Path:** `gymOrgId` from Create Gym Org (collection/env variable)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrg: { id, name, address, contactPhone, contactEmail, logoUrl, timezone, ownerUserId, isOwner, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `404` NOT_FOUND."
+                "description": "GET /gym-orgs/:gymOrgId — org detail for affiliated staff or CLIENT with an ACTIVE membership at this gym.\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Path:** `gymOrgId` from Create Gym Org or List My Gym Orgs\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrg: { id, name, address, contactPhone, contactEmail, logoUrl, timezone, ownerUserId, isOwner, createdAt, updatedAt } }` — CLIENT `isOwner` is false.\n**Errors:** `401` AUTHENTICATION_FAILED; `404` NOT_FOUND."
               },
               "status": "OK",
               "code": 200,
@@ -2144,6 +2182,45 @@
               "createdAt": "2026-08-05T00:53:20.000Z",
               "updatedAt": "2026-08-05T00:53:20.000Z",
               "uid": "25800783-c3bd67b7-7de7-cfc1-2e33-9249533d5daf"
+            },
+            {
+              "id": "b2d5f7a9-3c1e-4d0f-9b22-8e4a6c0d32d1",
+              "name": "200 OK — CLIENT subscribed gym",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "value": "application/json",
+                    "key": "Accept"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/gym-orgs/{{gymOrgId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "gym-orgs",
+                    "{{gymOrgId}}"
+                  ]
+                },
+                "description": "GET /gym-orgs/:gymOrgId — CLIENT with an ACTIVE membership at this gym. `isOwner` is always false.\n\n**Auth:** collection Bearer `{{accessToken}}` (CLIENT)\n**Path:** `gymOrgId` from List My Gym Orgs\n\n**Success:** `200` `{ gymOrg }`\n**Errors:** `401` AUTHENTICATION_FAILED; `404` NOT_FOUND."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "value": "application/json",
+                  "key": "Accept"
+                }
+              ],
+              "cookie": [],
+              "responseTime": null,
+              "body": "{\n  \"gymOrg\": {\n    \"id\": \"33333333-3333-4333-8333-333333333333\",\n    \"name\": \"Iron Temple\",\n    \"address\": \"12 Lift St\",\n    \"contactPhone\": \"+15550001111\",\n    \"contactEmail\": \"desk@irontemple.example\",\n    \"logoUrl\": null,\n    \"timezone\": \"Asia/Kolkata\",\n    \"ownerUserId\": \"22222222-2222-4222-8222-222222222222\",\n    \"isOwner\": false,\n    \"createdAt\": \"2026-08-03T00:00:00.000Z\",\n    \"updatedAt\": \"2026-08-03T00:00:00.000Z\"\n  }\n}",
+              "createdAt": "2026-09-07T15:00:00.000Z",
+              "updatedAt": "2026-09-07T15:00:00.000Z",
+              "uid": "25800783-b2d5f7a9-3c1e-4d0f-9b22-8e4a6c0d32d1"
             },
             {
               "id": "0e769858-2f79-f4ab-09b5-a5b159fea891",
@@ -2166,7 +2243,7 @@
                     "{{gymOrgId}}"
                   ]
                 },
-                "description": "GET /gym-orgs/:gymOrgId — org detail for affiliated staff (admin or trainer).\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Path:** `gymOrgId` from Create Gym Org (collection/env variable)\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrg: { id, name, address, contactPhone, contactEmail, logoUrl, timezone, ownerUserId, isOwner, createdAt, updatedAt } }`\n**Errors:** `401` AUTHENTICATION_FAILED; `404` NOT_FOUND."
+                "description": "GET /gym-orgs/:gymOrgId — org detail for affiliated staff or CLIENT with an ACTIVE membership at this gym.\n\n**Auth:** collection Bearer `{{accessToken}}`\n**Path:** `gymOrgId` from Create Gym Org or List My Gym Orgs\n\n**Response type:** `application/json`\n**Success:** `200` `{ gymOrg: { id, name, address, contactPhone, contactEmail, logoUrl, timezone, ownerUserId, isOwner, createdAt, updatedAt } }` — CLIENT `isOwner` is false.\n**Errors:** `401` AUTHENTICATION_FAILED; `404` NOT_FOUND."
               },
               "status": "Not Found",
               "code": 404,
@@ -10363,7 +10440,7 @@
                 }
               ]
             },
-            "description": "**Story:** A trainer searches the movement catalog to find the right exercise to add to a client's workout plan or schedule.\n\nGET /exercises/search?q= — platform seed catalog (ADR-0007). Any authenticated user. Empty q returns the bootstrap list. Cap 20.\n\n**Auth:** Bearer any lane\n**Query:**\n- `q` (optional, string) — Match name or aliases, max 120 chars. Example: `\"bench\"`.\n\n**Each exercise object:**\n- `id` (uuid) — ExerciseItem id.\n- `name` (string) — Movement name. Example: `\"Barbell Bench Press\"`.\n- `aliases` (string array) — Search synonyms used for matching.\n- `primaryMuscle` (enum) — Primary muscle group. Values: CHEST, LATS, UPPER_BACK, LOWER_BACK, SHOULDERS, BICEPS, TRICEPS, QUADS, HAMSTRINGS, GLUTES, CALVES, CORE, FULL_BODY, CARDIO, OTHER.\n- `equipment` (enum) — Equipment type. Values: BARBELL, DUMBBELL, MACHINE, CABLE, BODYWEIGHT, KETTLEBELL, BAND, OTHER.\n- `measurement` (enum) — Tracking method. Values: WEIGHT_REPS, REPS_ONLY, DURATION, BODYWEIGHT_ASSISTED.\n- `illustration` (object or null) — Exercise illustration from \\@bryllim/workout-guide v1.0.0 (CC BY-SA 4.0). Null if no illustration is mapped for this exercise.\n  - `frames` (array of 3 strings) — Three sequential SVG animation frames (start, mid, end pose) served from pinned jsDelivr CDN. Pattern: `https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/<slug>/frame-{1,2,3}.svg`.\n  - `attribution` (string) — CC BY-SA 4.0 attribution text required by license.\n\n**Success `200`:** `{ exercises }`\n**Errors:** `401` AUTHENTICATION_FAILED · `422` VALIDATION_ERROR\nGuide: gym-backend `docs/coaching.md`."
+            "description": "**Story:** A trainer searches the movement catalog to find the right exercise to add to a client's workout plan or schedule.\n\nGET /exercises/search?q= — platform seed catalog (ADR-0007). Any authenticated user. Empty q returns the bootstrap list. Cap 20.\n\n**Auth:** Bearer any lane\n**Query:**\n- `q` (optional, string) — Match name or aliases, max 120 chars. Example: `\"bench\"`.\n\n**Each exercise object:**\n- `id` (uuid) — ExerciseItem id.\n- `name` (string) — Movement name. Example: `\"Barbell Bench Press\"`.\n- `aliases` (string array) — Search synonyms used for matching.\n- `primaryMuscle` (enum) — Primary muscle group. Values: CHEST, LATS, UPPER_BACK, LOWER_BACK, SHOULDERS, BICEPS, TRICEPS, QUADS, HAMSTRINGS, GLUTES, CALVES, CORE, FULL_BODY, CARDIO, OTHER.\n- `equipment` (enum) — Equipment type. Values: BARBELL, DUMBBELL, MACHINE, CABLE, BODYWEIGHT, KETTLEBELL, BAND, OTHER.\n- `measurement` (enum) — Tracking method. Values: WEIGHT_REPS, REPS_ONLY, DURATION, BODYWEIGHT_ASSISTED.\n- `illustration` (object or null) — Exercise illustration from \\@bryllim/workout-guide v1.0.0 (CC BY-SA 4.0). Null if no illustration is mapped for this exercise.\n  - `frames` (array of 3 strings) — Three sequential 512x512 PNG pose frames (start, mid, end) served from pinned jsDelivr CDN. Pattern: `https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/<slug>/frame-{1,2,3}.png`.\n  - `attribution` (string) — CC BY-SA 4.0 attribution text required by license.\n\n**Success `200`:** `{ exercises }`\n**Errors:** `401` AUTHENTICATION_FAILED · `422` VALIDATION_ERROR\nGuide: gym-backend `docs/coaching.md`."
           },
           "response": [
             {
@@ -10406,7 +10483,7 @@
               ],
               "cookie": [],
               "responseTime": null,
-              "body": "{\n  \"exercises\": [\n    {\n      \"id\": \"e0e00000-0000-4000-8000-000000000001\",\n      \"name\": \"Barbell Bench Press\",\n      \"aliases\": [\n        \"bench\"\n      ],\n      \"primaryMuscle\": \"CHEST\",\n      \"equipment\": \"BARBELL\",\n      \"measurement\": \"WEIGHT_REPS\",\n      \"illustration\": {\n        \"frames\": [\n          \"https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/bench-press/frame-1.svg\",\n          \"https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/bench-press/frame-2.svg\",\n          \"https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/bench-press/frame-3.svg\"\n        ],\n        \"attribution\": \"Exercise artwork by Everkinetic & Bryl Lim — CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)\"\n      }\n    },\n    {\n      \"id\": \"e0e00000-0000-4000-8000-00000000000b\",\n      \"name\": \"Barbell Squat\",\n      \"aliases\": [\n        \"squat\"\n      ],\n      \"primaryMuscle\": \"QUADS\",\n      \"equipment\": \"BARBELL\",\n      \"measurement\": \"WEIGHT_REPS\",\n      \"illustration\": {\n        \"frames\": [\n          \"https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/squat/frame-1.svg\",\n          \"https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/squat/frame-2.svg\",\n          \"https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/squat/frame-3.svg\"\n        ],\n        \"attribution\": \"Exercise artwork by Everkinetic & Bryl Lim — CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)\"\n      }\n    }\n  ]\n}"
+              "body": "{\n  \"exercises\": [\n    {\n      \"id\": \"e0e00000-0000-4000-8000-000000000001\",\n      \"name\": \"Barbell Bench Press\",\n      \"aliases\": [\n        \"bench\"\n      ],\n      \"primaryMuscle\": \"CHEST\",\n      \"equipment\": \"BARBELL\",\n      \"measurement\": \"WEIGHT_REPS\",\n      \"illustration\": {\n        \"frames\": [\n          \"https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/bench-press/frame-1.png\",\n          \"https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/bench-press/frame-2.png\",\n          \"https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/bench-press/frame-3.png\"\n        ],\n        \"attribution\": \"Exercise artwork by Everkinetic & Bryl Lim — CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)\"\n      }\n    },\n    {\n      \"id\": \"e0e00000-0000-4000-8000-00000000000b\",\n      \"name\": \"Barbell Squat\",\n      \"aliases\": [\n        \"squat\"\n      ],\n      \"primaryMuscle\": \"QUADS\",\n      \"equipment\": \"BARBELL\",\n      \"measurement\": \"WEIGHT_REPS\",\n      \"illustration\": {\n        \"frames\": [\n          \"https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/squat/frame-1.png\",\n          \"https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/squat/frame-2.png\",\n          \"https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/squat/frame-3.png\"\n        ],\n        \"attribution\": \"Exercise artwork by Everkinetic & Bryl Lim — CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)\"\n      }\n    }\n  ]\n}"
             }
           ]
         },
