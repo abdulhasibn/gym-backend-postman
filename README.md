@@ -89,6 +89,9 @@ Shared error envelope:
    1. Admin: **Subscriptions → List Client Subscriptions**
    2. Admin: **Update Subscription Payment** / **Override Subscription Start** (unstarted BASE)
    3. Client: **List My Subscriptions**
+12b. Attendance (visit; needs ACTIVE member + `gymOrgId`):
+   1. Client: **Attendance → Self Check-in** → **Self Check-out**
+   2. Admin: **Desk Mark** / **Desk Check-out** / **List Present** / **List Gym Day Attendances**
 
 13. Nutrition (any authenticated user + CLIENT diary):
    1. **Nutrition → Search Foods** (stores `foodItemId`; `servingId` defaults to seed Idli piece)
